@@ -10,14 +10,11 @@ class ProfileView extends GetView<ProfileController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text("Profil", style: TextStyle(color: Color(0xFF1A1A2E), fontWeight: FontWeight.bold)),
+        title: const Text("Profil Saya", style: TextStyle(color: Color(0xFF1A1A2E), fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFFF5F7FB),
         foregroundColor: const Color(0xFF1A1A2E),
         elevation: 0,
         centerTitle: true,
-        leading: Navigator.canPop(context) 
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back())
-            : null,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -34,7 +31,7 @@ class ProfileView extends GetView<ProfileController> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: Colors.black.withOpacity(0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -46,72 +43,65 @@ class ProfileView extends GetView<ProfileController> {
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF5B67F1).withValues(alpha: 0.3), width: 3),
+                        border: Border.all(color: const Color(0xFF5B67F1).withOpacity(0.3), width: 3),
                       ),
-                      child: CircleAvatar(
+                      child: Obx(() => CircleAvatar(
                         radius: 46,
-                        backgroundColor: const Color(0xFF5B67F1).withValues(alpha: 0.1),
-                        child: const Icon(Icons.person_rounded, size: 46, color: Color(0xFF5B67F1)),
-                      ),
+                        backgroundColor: const Color(0xFF5B67F1).withOpacity(0.1),
+                        backgroundImage: controller.userPhotoUrl.value.isNotEmpty 
+                            ? NetworkImage(controller.userPhotoUrl.value) 
+                            : null,
+                        child: controller.userPhotoUrl.value.isEmpty 
+                            ? const Icon(Icons.person_rounded, size: 46, color: Color(0xFF5B67F1)) 
+                            : null,
+                      )),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      "Andi Saputra",
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E)),
-                    ),
+                    Obx(() => Text(
+                      controller.userName.value,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E)),
+                    )),
                     const SizedBox(height: 4),
-                    Text(
-                      "0812 3456 7890",
+                    Obx(() => Text(
+                      controller.userPhone.value,
                       style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-                    ),
+                    )),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Menu Group 1
+              // Info Area (RT/RW)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildInfoItem("RT", controller.userRT),
+                    Container(width: 1, height: 40, color: Colors.grey.shade200),
+                    _buildInfoItem("RW", controller.userRW),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Menu Group
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
                     _buildMenuItem(Icons.person_outline_rounded, "Ubah Profil"),
                     const Divider(height: 1, indent: 60),
+                    _buildMenuItem(Icons.mail_outline_rounded, "Email Saya", subtitle: controller.userEmail),
+                    const Divider(height: 1, indent: 60),
                     _buildMenuItem(Icons.lock_outline_rounded, "Ubah Password"),
-                    const Divider(height: 1, indent: 60),
-                    _buildMenuItem(Icons.notifications_none_rounded, "Notifikasi"),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Menu Group 2
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    _buildMenuItem(Icons.info_outline_rounded, "Tentang Aplikasi"),
-                    const Divider(height: 1, indent: 60),
-                    _buildMenuItem(Icons.privacy_tip_outlined, "Kebijakan Privasi"),
                   ],
                 ),
               ),
@@ -133,7 +123,7 @@ class ProfileView extends GetView<ProfileController> {
                       Icon(Icons.logout_rounded, color: Colors.red.shade600, size: 22),
                       const SizedBox(width: 8),
                       Text(
-                        "Keluar",
+                        "Keluar Aplikasi",
                         style: TextStyle(
                           color: Colors.red.shade600,
                           fontSize: 16,
@@ -152,26 +142,33 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title) {
+  Widget _buildInfoItem(String label, RxString value) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+        const SizedBox(height: 4),
+        Obx(() => Text(
+          value.value,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E)),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(IconData icon, String title, {RxString? subtitle}) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF5B67F1).withValues(alpha: 0.1),
+          color: const Color(0xFF5B67F1).withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: const Color(0xFF5B67F1), size: 22),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Color(0xFF1A1A2E),
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      trailing: Icon(Icons.chevron_right_rounded, size: 24, color: Colors.grey.shade400),
+      title: Text(title, style: const TextStyle(color: Color(0xFF1A1A2E), fontSize: 15, fontWeight: FontWeight.w500)),
+      subtitle: subtitle != null ? Obx(() => Text(subtitle.value)) : null,
+      trailing: const Icon(Icons.chevron_right_rounded, size: 24, color: Colors.grey),
       onTap: () {},
     );
   }

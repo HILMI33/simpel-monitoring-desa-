@@ -17,6 +17,17 @@ class PengumumanModel {
     this.createdAt,
   });
 
+  factory PengumumanModel.fromJson(Map<String, dynamic> json) {
+    return PengumumanModel(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      content: json['content'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      authorName: json['authorName'] ?? 'Admin Desa',
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+    );
+  }
+
   factory PengumumanModel.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return PengumumanModel(

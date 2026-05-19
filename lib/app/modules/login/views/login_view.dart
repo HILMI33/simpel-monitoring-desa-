@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controllers/login_controller.dart';
 import '../../../routes/app_routes.dart';
 
 class LoginView extends StatefulWidget {
@@ -18,11 +19,7 @@ class _LoginViewState
 
   // ================= CONTROLLER =================
 
-  final _emailController =
-      TextEditingController();
-
-  final _passwordController =
-      TextEditingController();
+  late final LoginController _loginController;
 
   // ================= UI STATE =================
 
@@ -51,6 +48,7 @@ class _LoginViewState
   @override
   void initState() {
     super.initState();
+    _loginController = Get.find<LoginController>();
 
     _animationController =
         AnimationController(
@@ -84,11 +82,6 @@ class _LoginViewState
   @override
   void dispose() {
     _animationController.dispose();
-
-    _emailController.dispose();
-
-    _passwordController.dispose();
-
     super.dispose();
   }
 
@@ -206,9 +199,7 @@ class _LoginViewState
 
                   style: TextStyle(
                     color:
-                        Colors.white.withValues(
-                      alpha: 0.9,
-                    ),
+                        Colors.white.withOpacity(0.9),
 
                     fontSize: 12,
 
@@ -241,9 +232,7 @@ class _LoginViewState
 
                   decoration: BoxDecoration(
                     color:
-                        Colors.green.withValues(
-                      alpha: 0.20,
-                    ),
+                        Colors.green.withOpacity(0.20),
 
                     borderRadius:
                         BorderRadius.circular(
@@ -252,9 +241,7 @@ class _LoginViewState
 
                     border: Border.all(
                       color:
-                          Colors.white.withValues(
-                        alpha: 0.15,
-                      ),
+                          Colors.white.withOpacity(0.15),
                     ),
                   ),
 
@@ -291,9 +278,7 @@ class _LoginViewState
 
                   style: TextStyle(
                     color:
-                        Colors.white.withValues(
-                      alpha: 0.85,
-                    ),
+                        Colors.white.withOpacity(0.85),
 
                     fontSize: 13,
                   ),
@@ -371,7 +356,7 @@ class _LoginViewState
 
           _buildTextField(
             controller:
-                _emailController,
+                _loginController.emailController,
 
             hint:
                 "Masukkan email atau no. hp",
@@ -392,7 +377,7 @@ class _LoginViewState
 
           _buildTextField(
             controller:
-                _passwordController,
+                _loginController.passwordController,
 
             hint:
                 "Masukkan password",
@@ -642,28 +627,34 @@ class _LoginViewState
 
           shape:
               RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(
-              16,
-            ),
-          ),
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
         ),
 
         onPressed: () {
-
-          Get.offAllNamed(
-            Routes.MAIN_NAVIGATION,
-          );
+          _loginController.login();
         },
 
-        child: const Text(
-          "Masuk",
-
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: Obx(() => _loginController.isLoading.value
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text(
+                "Masuk",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              )),
       ),
     );
   }
@@ -673,33 +664,39 @@ class _LoginViewState
   // =====================================================
 
   Widget _buildGoogleButton() {
-
-    return OutlinedButton.icon(
-      onPressed: () {},
-
-      icon: const Icon(
-        Icons.g_mobiledata,
-        color: Colors.red,
-        size: 28,
-      ),
-
-      label: const Text(
-        "Masuk dengan Google",
-      ),
-
+    return OutlinedButton(
+      onPressed: () {
+        _loginController.loginGoogle();
+      },
       style: OutlinedButton.styleFrom(
-        minimumSize:
-            const Size(double.infinity, 54),
-
+        minimumSize: const Size(double.infinity, 54),
         side: BorderSide(
           color: Colors.grey.shade300,
         ),
-
-        shape:
-            RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(16),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            "assets/images/google_logo.png",
+            width: 22,
+            height: 22,
+          ),
+          const SizedBox(width: 12),
+          const Text(
+            "Masuk dengan Google",
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

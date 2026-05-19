@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controllers/pengumuman_controller.dart';
 
 class PengumumanView extends GetView<PengumumanController> {
@@ -8,15 +9,12 @@ class PengumumanView extends GetView<PengumumanController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text("Pengumuman", style: TextStyle(color: Colors.black)),
+        title: const Text("Pengumuman", style: TextStyle(color: Color(0xFF1A1A2E), fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        foregroundColor: const Color(0xFF1A1A2E),
         elevation: 0,
-        leading: Navigator.canPop(context) 
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back())
-            : null,
       ),
       body: Column(
         children: [
@@ -46,7 +44,7 @@ class PengumumanView extends GetView<PengumumanController> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: isSelected ? const Color(0xFF5B67F1) : Colors.grey.shade300),
                             boxShadow: isSelected ? [
-                              BoxShadow(color: const Color(0xFF5B67F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))
+                              BoxShadow(color: const Color(0xFF5B67F1).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))
                             ] : [],
                           ),
                           child: Center(
@@ -69,35 +67,41 @@ class PengumumanView extends GetView<PengumumanController> {
           const Divider(height: 1, color: Colors.black12),
           
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildAnnouncementCard(
-                  title: "Kerja Bakti Desa",
-                  date: "Minggu, 18 Mei 2024 pukul 07:00 WIB\ndi Balai Desa",
-                  timeAgo: "15 Mei 2024",
-                  tag: "PENTING",
-                  tagColor: Colors.red,
-                  icon: Icons.cleaning_services,
-                ),
-                _buildAnnouncementCard(
-                  title: "Posyandu Balita",
-                  date: "Dilaksanakan pada hari Jumat, 20 Mei 2024 di Balai Desa",
-                  timeAgo: "16 Mei 2024",
-                  tag: "INFO",
-                  tagColor: Colors.blue,
-                  icon: Icons.child_care,
-                ),
-                _buildAnnouncementCard(
-                  title: "Bantuan Pangan Tahap 1",
-                  date: "Pelayanan pada tanggal 22 Mei 2024\nHarap membawa KTP",
-                  timeAgo: "18 Mei 2024",
-                  tag: "SYARAT BANTUAN",
-                  tagColor: Colors.orange,
-                  icon: Icons.food_bank,
-                ),
-              ],
-            ),
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final list = controller.filteredAnnouncements;
+              if (list.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, size: 64, color: Colors.grey.shade300),
+                      const SizedBox(height: 16),
+                      Text("Tidak ada pengumuman", style: TextStyle(color: Colors.grey.shade400)),
+                    ],
+                  ),
+                );
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  final announcement = list[index];
+                  return _buildAnnouncementCard(
+                    title: announcement.title,
+                    content: announcement.content,
+                    date: announcement.createdAt != null 
+                        ? DateFormat('dd MMM yyyy').format(announcement.createdAt!)
+                        : "-",
+                    imageUrl: announcement.imageUrl,
+                    author: announcement.authorName,
+                  );
+                },
+              );
+            }),
           ),
         ],
       ),
@@ -106,11 +110,10 @@ class PengumumanView extends GetView<PengumumanController> {
 
   Widget _buildAnnouncementCard({
     required String title,
+    required String content,
     required String date,
-    required String timeAgo,
-    required String tag,
-    required Color tagColor,
-    required IconData icon,
+    required String imageUrl,
+    required String author,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -118,71 +121,64 @@ class PengumumanView extends GetView<PengumumanController> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade100, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 68,
-            height: 68,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [tagColor.withValues(alpha: 0.2), tagColor.withValues(alpha: 0.05)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B67F1).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.campaign_rounded, color: Color(0xFF5B67F1), size: 20),
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: tagColor.withValues(alpha: 0.2)),
-            ),
-            child: Icon(icon, color: tagColor, size: 30),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: tagColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        tag, 
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.history, size: 12, color: Colors.grey.shade400),
-                        const SizedBox(width: 4),
-                        Text(timeAgo, style: TextStyle(color: Colors.grey.shade400, fontSize: 11, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
+                    Text(author, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1A1A2E))),
+                    Text(date, style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  title, 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1A1A2E), height: 1.2)
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  date, 
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13, height: 1.4)
-                ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (imageUrl.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(imageUrl, width: double.infinity, height: 160, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: 16),
+          ],
+          Text(
+            title, 
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF1A1A2E), height: 1.2)
+          ),
+          const SizedBox(height: 8),
+          Text(
+            content, 
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14, height: 1.5)
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () {},
+            child: const Text(
+              "Baca Selengkapnya",
+              style: TextStyle(color: Color(0xFF5B67F1), fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ],

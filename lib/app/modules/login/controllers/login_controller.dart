@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-
+import '../../../../app/data/services/auth_service.dart';
 import '../../../routes/app_routes.dart';
 
 class LoginController extends GetxController {
-  // STORAGE
   final box = GetStorage();
+  final authService = Get.find<AuthService>();
 
   // TEXT CONTROLLER
   final emailController = TextEditingController();
@@ -14,11 +14,24 @@ class LoginController extends GetxController {
 
   // HIDE PASSWORD
   final obscurePassword = true.obs;
+  final isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Auto-login redirect disabled so the app always starts on the Login page
+    /*
+    if (authService.isLoggedIn.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed(Routes.SECURITY_VERIFICATION);
+      });
+    }
+    */
+  }
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
+    // Keep controllers active during fast route transitions to prevent GetX disposal race conditions
     super.onClose();
   }
 
@@ -26,34 +39,14 @@ class LoginController extends GetxController {
     obscurePassword.value = !obscurePassword.value;
   }
 
-  bool _isValidCredential(String emailOrPhone, String password) {
-    // RegisterController menyimpan:
-    // name, email, phone, rt, rw, (tidak menyimpan password di code saat ini)
-    // Agar tetap bisa jalan, kita pakai fallback:
-    // - anggap "password" harus cocok dengan nilai yang disimpan jika ada
-    // - kalau belum ada, password apa pun tidak akan lolos.
-    final savedEmail = box.read('email') as String?;
-    final savedPhone = box.read('phone') as String?;
-    final savedPassword = box.read('password') as String?;
-
-    final inputMatchesAccount =
-        (savedEmail != null && savedEmail == emailOrPhone) ||
-        (savedPhone != null && savedPhone == emailOrPhone);
-
-    if (!inputMatchesAccount) return false;
-    if (savedPassword == null) return false;
-
-    return savedPassword == password;
-  }
-
-  void login() {
-    final emailOrPhone = emailController.text.trim();
+  Future<void> login() async {
+    final email = emailController.text.trim();
     final password = passwordController.text;
 
-    if (emailOrPhone.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       Get.snackbar(
         'Error',
-        'Email / No. HP dan Password wajib diisi',
+        'Email dan Password wajib diisi',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -61,28 +54,34 @@ class LoginController extends GetxController {
       return;
     }
 
-    final ok = _isValidCredential(emailOrPhone, password);
-    if (!ok) {
-      Get.snackbar(
-        'Login gagal',
-        'Email/No. HP atau password salah',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
+    try {
+      isLoading.value = true;
+      bool success = await authService.loginWithEmail(email, password);
+      
+      if (success) {
+        box.write('isLoggedIn', true);
+        Get.offAllNamed(Routes.SECURITY_VERIFICATION);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Login gagal: $e');
+    } finally {
+      isLoading.value = false;
     }
-
-    Get.offAllNamed(Routes.MAIN_NAVIGATION);
   }
 
-  void loginGoogle() {
-    // Placeholder: belum ada integrasi OAuth.
-    Get.snackbar(
-      'Info',
-      'Belum diimplementasikan login Google',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> loginGoogle() async {
+    try {
+      isLoading.value = true;
+      bool success = await authService.loginWithGoogle();
+      
+      if (success) {
+        box.write('isLoggedIn', true);
+        Get.offAllNamed(Routes.SECURITY_VERIFICATION);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Google Sign-In gagal: $e');
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
-

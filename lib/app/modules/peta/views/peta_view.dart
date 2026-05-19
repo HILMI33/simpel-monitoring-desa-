@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
-import 'package:latlong2/latlong.dart';
-
 import '../controllers/peta_controller.dart';
 
 class PetaView extends GetView<PetaController> {
@@ -12,10 +10,13 @@ class PetaView extends GetView<PetaController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Peta Monitoring'),
+        title: const Text('Peta Monitoring Desa', style: TextStyle(color: Color(0xFF1A1A2E), fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A2E),
+        elevation: 0,
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading.value && controller.markers.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
         return FlutterMap(
@@ -27,33 +28,18 @@ class PetaView extends GetView<PetaController> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.simpel', // Sesuaikan package name Anda
+              userAgentPackageName: 'com.hilmi33.simpel',
             ),
             MarkerLayer(
-              markers: [
-                // Marker lokasi user
-                Marker(
-                  point: controller.currentLocation.value,
-                  width: 80,
-                  height: 80,
-                  child: const Icon(
-                    Icons.location_on,
-                    color: Colors.red,
-                    size: 40,
-                  ),
-                ),
-                // Nanti tambahkan: ...controller.reportMarkers,
-                // Nanti tambahkan: ...controller.pembangunanMarkers,
-              ],
+              markers: controller.markers,
             )
           ],
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          controller.getCurrentLocation();
-        },
-        child: const Icon(Icons.my_location),
+        backgroundColor: const Color(0xFF5B67F1),
+        onPressed: () => controller.getCurrentLocation(),
+        child: const Icon(Icons.my_location, color: Colors.white),
       ),
     );
   }

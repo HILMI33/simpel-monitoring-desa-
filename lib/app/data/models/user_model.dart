@@ -5,19 +5,37 @@ class UserModel {
   final String name;
   final String email;
   final String photoUrl;
-  final String nik;
   final String role; // 'warga', 'admin'
+  final String rt;
+  final String rw;
   final DateTime? createdAt;
+  final bool isFaceRegistered;
 
   UserModel({
     required this.id,
     required this.name,
     required this.email,
     this.photoUrl = '',
-    this.nik = '',
     this.role = 'warga',
+    this.rt = '',
+    this.rw = '',
     this.createdAt,
+    this.isFaceRegistered = false,
   });
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] ?? json['_id'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      photoUrl: json['photo_url'] ?? '',
+      role: json['role'] ?? 'warga',
+      rt: json['rt'] ?? '',
+      rw: json['rw'] ?? '',
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      isFaceRegistered: json['is_face_registered'] ?? false,
+    );
+  }
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -26,8 +44,9 @@ class UserModel {
       name: data['name'] ?? '',
       email: data['email'] ?? '',
       photoUrl: data['photoUrl'] ?? '',
-      nik: data['nik'] ?? '',
       role: data['role'] ?? 'warga',
+      rt: data['rt'] ?? '',
+      rw: data['rw'] ?? '',
       createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : null,
     );
   }
@@ -37,8 +56,9 @@ class UserModel {
       'name': name,
       'email': email,
       'photoUrl': photoUrl,
-      'nik': nik,
       'role': role,
+      'rt': rt,
+      'rw': rw,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     };
   }

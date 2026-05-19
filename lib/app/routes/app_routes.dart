@@ -4,6 +4,7 @@ abstract class Routes {
 
   static const LOGIN = '/login';
   static const REGISTER = '/register';
+  static const SECURITY_VERIFICATION = '/security-verification';
   static const CREATE_REPORT = '/create-report';
   static const PETA = '/peta';
   static const PEMBANGUNAN = '/pembangunan';

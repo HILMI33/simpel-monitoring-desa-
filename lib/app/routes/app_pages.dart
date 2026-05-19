@@ -28,8 +28,8 @@ import '../modules/register/bindings/register_binding.dart';
 import '../modules/register/views/register_view.dart';
 import '../modules/update_progres/bindings/update_progres_binding.dart';
 import '../modules/update_progres/views/update_progres_view.dart';
-import '../modules/peta/views/peta_view.dart';
-import '../modules/peta/bindings/peta_binding.dart';
+import '../modules/security_verification/bindings/security_verification_binding.dart';
+import '../modules/security_verification/views/security_verification_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -60,7 +60,6 @@ class AppPages {
       name: Routes.CREATE_REPORT,
       page: () => const CreateReportView(),
       binding: CreateReportViewBinding(),
-
     ),
     GetPage(
       name: Routes.PETA,
@@ -108,9 +107,9 @@ class AppPages {
       binding: DetailPembangunanBinding(),
     ),
     GetPage(
-      name:'/peta',
-      page:()=> PetaView(),
-      binding:PetaBinding(),
+      name: Routes.SECURITY_VERIFICATION,
+      page: () => const SecurityVerificationView(),
+      binding: SecurityVerificationBinding(),
     ),
   ];
 }

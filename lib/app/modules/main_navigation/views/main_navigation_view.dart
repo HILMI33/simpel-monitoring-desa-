@@ -29,8 +29,8 @@ class MainNavigationView extends GetView<MainNavigationController> {
           onDestinationSelected: controller.changePage,
           backgroundColor: Colors.white,
           elevation: 10,
-          indicatorColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
-          shadowColor: Colors.black.withValues(alpha: 0.05),
+          indicatorColor: Theme.of(context).primaryColor.withOpacity(0.15),
+          shadowColor: Colors.black.withOpacity(0.05),
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),

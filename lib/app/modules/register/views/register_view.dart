@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -111,7 +113,7 @@ class RegisterView extends GetView<RegisterController> {
             height: 34,
 
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
 
@@ -141,7 +143,7 @@ class RegisterView extends GetView<RegisterController> {
               Text(
                 "Pendaftaran Warga",
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
+                  color: Colors.white.withOpacity(0.75),
                   fontSize: 11,
                 ),
               ),
@@ -649,54 +651,196 @@ class RegisterView extends GetView<RegisterController> {
     );
   }
 
-  // =====================================================
-  // STEP 4 - VERIFIKASI
-  // =====================================================
-
   Widget _stepVerifikasi(
     BuildContext context, {
     Key? key,
   }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+    return SingleChildScrollView(
+      key: key,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildStepTitle(
+            "Registrasi Wajah",
+            "Daftarkan wajah Anda untuk verifikasi masuk",
+            Icons.face_retouching_natural_rounded,
+          ),
+          const SizedBox(height: 24),
+          
+          // Circular Face Scanner Circle
+          _buildFaceScannerCircle(),
+          
+          const SizedBox(height: 24),
+          Obx(() {
+            if (controller.isFaceScanning.value) {
+              return const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: _primaryGreen,
+                ),
+              );
+            }
+            if (controller.isFaceRegistered.value) {
+              return Icon(Icons.check_circle_rounded, color: Colors.green.shade700, size: 36);
+            }
+            return SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryGreen,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: controller.startFaceRegistration,
+                icon: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
+                label: const Text(
+                  'Ambil Foto & Pindai Wajah',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  // Circular Face Scanner Widget
+  Widget _buildFaceScannerCircle() {
+    return Container(
+      width: 180,
+      height: 180,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: _primaryGreen,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryGreen.withOpacity(0.15),
+            blurRadius: 16,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            const Icon(
-              Icons.verified_user_outlined,
-              size: 90,
-              color: _primaryGreen,
-            ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "Verifikasi Akun",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF1A2A1A),
+            // User Photo or Mock Avatar
+            Obx(() {
+              if (controller.imagePath.value.isNotEmpty) {
+                if (kIsWeb) {
+                  return Image.network(
+                    controller.imagePath.value,
+                    fit: BoxFit.cover,
+                  );
+                } else {
+                  return Image.file(
+                    File(controller.imagePath.value),
+                    fit: BoxFit.cover,
+                  );
+                }
+              }
+              return Container(
+                color: Colors.grey.shade100,
+                child: Icon(
+                  Icons.person_pin_rounded,
+                  color: Colors.grey.shade400,
+                  size: 100,
+                ),
+              );
+            }),
+            
+            // Cyber mesh grid vector layer
+            Opacity(
+              opacity: 0.15,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200',
+                fit: BoxFit.cover,
+                errorBuilder: (context, err, stack) => const SizedBox(),
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            Text(
-              "Pastikan semua data sudah benar sebelum melanjutkan pendaftaran.",
-              textAlign: TextAlign.center,
-
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.6,
-                color: Colors.grey.shade600,
-              ),
-            ),
+            // Scanning laser line animation
+            Obx(() {
+              if (controller.isFaceScanning.value) {
+                return const _ScanningLaserLine();
+              }
+              return const SizedBox();
+            }),
           ],
         ),
       ),
     );
+  }
+
+  // Diagnostic Logs Console
+  Widget _buildDiagnosticLogs() {
+    return Obx(() {
+      if (controller.biometricsLogs.isEmpty) return const SizedBox();
+      return Card(
+        color: const Color(0xFF0F172A), // Slate-900 black console
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.terminal_rounded, color: Colors.greenAccent, size: 16),
+                  SizedBox(width: 8),
+                  Text(
+                    'DIAGNOSTIC CONSOLE',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.greenAccent,
+                      letterSpacing: 1.0,
+                      fontFamily: 'Courier',
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(color: Colors.white12, height: 16),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: controller.biometricsLogs.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6.0),
+                    child: Text(
+                      controller.biometricsLogs[index],
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFC0FCD0), // Light neon green terminal text
+                        fontFamily: 'Courier',
+                        height: 1.3,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   // =====================================================
@@ -716,7 +860,7 @@ class RegisterView extends GetView<RegisterController> {
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -742,7 +886,7 @@ class RegisterView extends GetView<RegisterController> {
 
                 boxShadow: [
                   BoxShadow(
-                    color: _primaryGreen.withValues(alpha: 0.35),
+                    color: _primaryGreen.withOpacity(0.35),
                     blurRadius: 14,
                     offset: const Offset(0, 6),
                   ),
@@ -989,6 +1133,87 @@ class RegisterView extends GetView<RegisterController> {
         size: 18,
         color: Colors.grey.shade400,
       ),
+    );
+  }
+}
+
+// --- Stateful Laser Scanner animation class ---
+class _ScanningLaserLine extends StatefulWidget {
+  const _ScanningLaserLine();
+
+  @override
+  State<_ScanningLaserLine> createState() => _ScanningLaserLineState();
+}
+
+class _ScanningLaserLineState extends State<_ScanningLaserLine>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: -10.0, end: 190.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            Positioned(
+              top: _animation.value,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.greenAccent,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.greenAccent.withOpacity(0.8),
+                          blurRadius: 10,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 15,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.greenAccent.withOpacity(0.3),
+                          Colors.greenAccent.withOpacity(0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

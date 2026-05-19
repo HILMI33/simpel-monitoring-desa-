@@ -10,8 +10,8 @@ class ApiService extends GetxService {
   // - Di HP Asli / Emulator: menggunakan IP Lokal PC Anda (192.168.18.10)
   //   (Pastikan HP dan Laptop terhubung ke Wi-Fi / Hotspot yang sama!)
   final String baseUrl = kIsWeb 
-      ? 'http://localhost:5005/api' 
-      : 'http://192.168.18.10:5005/api'; 
+      ? 'http://localhost:5002/api' 
+      : 'http://192.168.18.10:5002/api'; 
   final GetStorage storage = GetStorage();
 
   Map<String, String> get _headers {

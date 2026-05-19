@@ -2,12 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "SIMPEL Web (Port 5005)",
+            "name": "SIMPEL Web (Port 5000)",
             "request": "launch",
             "type": "dart",
             "args": [
                 "--web-port",
-                "5005"
+                "5000"
             ]
         }
     ]

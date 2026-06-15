@@ -12,7 +12,7 @@ class BannerCarousel extends GetView<DashboardController> {
     return Column(
       children: [
         SizedBox(
-          height: 140,
+          height: 180,
           child: PageView.builder(
             itemCount: controller.banners.length,
             onPageChanged: (index) => controller.currentBannerIndex.value = index,
@@ -63,6 +63,8 @@ class BannerCarousel extends GetView<DashboardController> {
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(

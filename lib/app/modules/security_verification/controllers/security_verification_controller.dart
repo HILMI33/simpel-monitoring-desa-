@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../../app/data/services/auth_service.dart';
 import '../../../../app/data/services/api_service.dart';
 import '../../../../app/data/models/user_model.dart';
@@ -16,7 +19,7 @@ class SecurityVerificationController extends GetxController {
   final storage = GetStorage();
 
   // Step state: 1 = Email OTP, 2 = Face Verification
-  final currentStep = 2.obs;
+  final currentStep = 1.obs;
   final isLoading = false.obs;
 
   // Step 1: Email OTP
@@ -29,11 +32,24 @@ class SecurityVerificationController extends GetxController {
   // Step 2: Face Verification
   final isFaceScanning = false.obs;
   final isFaceVerified = false.obs;
-  final scanStatus = 'Siap melakukan verifikasi wajah'.obs;
+  final scanStatus = 'Mempersiapkan Kamera...'.obs;
   final confidenceScore = 0.0.obs;
   final biometricsLogs = <String>[].obs;
   final imagePath = ''.obs;
   XFile? _capturedFile;
+
+  // Camera & ML Kit
+  CameraController? cameraController;
+  final isCameraInitialized = false.obs;
+  final isFaceDetected = false.obs;
+  final FaceDetector _faceDetector = FaceDetector(
+    options: FaceDetectorOptions(
+      enableContours: true,
+      enableLandmarks: true,
+    ),
+  );
+  bool _canProcess = true;
+  bool _isBusy = false;
 
   String get userEmail => authService.currentUser.value?.email ?? 'warga@desa.go.id';
   String get userName => authService.currentUser.value?.name ?? 'Warga';
@@ -42,39 +58,73 @@ class SecurityVerificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    scanStatus.value = isRegMode ? 'Siap melakukan registrasi wajah' : 'Siap melakukan verifikasi wajah';
+    // Memaksa pengguna untuk selalu melewati tahap OTP setiap kali login
+    currentStep.value = 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      sendOtp();
+    });
+    
+    ever(currentStep, (step) {
+      if (step == 2) {
+        _initializeCamera();
+      } else {
+        _disposeCamera();
+      }
+    });
   }
 
   @override
   void onClose() {
+    _canProcess = false;
+    _disposeCamera();
+    _faceDetector.close();
     otpController.dispose();
     _cooldownTimer?.cancel();
     super.onClose();
   }
 
   // --- Step 1 Actions ---
-  void sendOtp() {
+  Future<void> sendOtp() async {
     if (otpCooldown.value > 0) return;
 
     isLoading.value = true;
-    
-    // Simulate sending OTP email
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      isLoading.value = false;
-      isOtpSent.value = true;
-      otpCooldown.value = 60;
-      
-      Get.snackbar(
-        'Kode OTP Terkirim',
-        'Kode verifikasi telah dikirim ke email $userEmail. Gunakan kode "1234" untuk demo.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xFF2E7D32),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
-      );
+    try {
+      final response = await apiService.post('/auth/send-otp', {
+        'email': userEmail,
+        'type': 'login',
+      });
 
-      _startCooldownTimer();
-    });
+      if (response.statusCode == 200) {
+        isOtpSent.value = true;
+        otpCooldown.value = 60;
+        _startCooldownTimer();
+        Get.snackbar(
+          'Kode OTP Terkirim',
+          'Kode verifikasi telah dikirim ke email $userEmail.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: const Color(0xFF2E7D32),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 5),
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        Get.snackbar(
+          'Gagal Mengirim OTP',
+          error['message'] ?? 'Terjadi kesalahan pada server.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal menghubungkan ke server.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void _startCooldownTimer() {
@@ -88,7 +138,7 @@ class SecurityVerificationController extends GetxController {
     });
   }
 
-  void verifyOtp() {
+  Future<void> verifyOtp() async {
     final code = otpController.text.trim();
     if (code.isEmpty) {
       Get.snackbar('Error', 'Silakan masukkan kode OTP');
@@ -96,62 +146,203 @@ class SecurityVerificationController extends GetxController {
     }
 
     isLoading.value = true;
+    try {
+      final response = await apiService.post('/auth/verify-otp', {
+        'email': userEmail,
+        'code': code,
+      });
 
-    // Simulate OTP verification check
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      isLoading.value = false;
-      if (code == '1234') {
+      if (response.statusCode == 200) {
         isOtpVerified.value = true;
+        
+        if (authService.currentUser.value != null) {
+          final current = authService.currentUser.value!;
+          final updated = UserModel(
+            id: current.id,
+            name: current.name,
+            email: current.email,
+            photoUrl: current.photoUrl,
+            role: current.role,
+            rt: current.rt,
+            rw: current.rw,
+            createdAt: current.createdAt,
+            isFaceRegistered: current.isFaceRegistered,
+            isEmailVerified: true,
+          );
+          authService.currentUser.value = updated;
+          storage.write('user', updated.toJson());
+        }
+
         Get.snackbar(
           'OTP Terverifikasi',
           'Email Anda berhasil diverifikasi!',
           backgroundColor: const Color(0xFF2E7D32),
           colorText: Colors.white,
         );
-        // Progress automatically to Face Verification step
+        
         Future.delayed(const Duration(milliseconds: 800), () {
           currentStep.value = 2;
         });
       } else {
+        final error = jsonDecode(response.body);
         Get.snackbar(
-          'Gagal',
-          'Kode OTP salah. Silakan coba lagi (Gunakan "1234").',
+          'Gagal Verifikasi',
+          error['message'] ?? 'Kode OTP salah atau telah kadaluarsa.',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
-    });
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal menghubungkan ke server.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // --- Step 2 Actions (FaceNet Biometric Scanner) ---
+  // --- Step 2 Actions (Camera & Real-Time Face Detection) ---
+  Future<void> _initializeCamera() async {
+    if (kIsWeb) return; // Not supported on web directly like this
+    try {
+      final cameras = await availableCameras();
+      final frontCamera = cameras.firstWhere(
+        (camera) => camera.lensDirection == CameraLensDirection.front,
+        orElse: () => cameras.first,
+      );
+
+      cameraController = CameraController(
+        frontCamera,
+        ResolutionPreset.medium,
+        enableAudio: false,
+        imageFormatGroup: Platform.isAndroid 
+            ? ImageFormatGroup.nv21 
+            : ImageFormatGroup.bgra8888,
+      );
+
+      await cameraController!.initialize();
+      isCameraInitialized.value = true;
+      scanStatus.value = 'Arahkan wajah Anda ke dalam area scan';
+      _addLog('Kamera diinisialisasi. Modul pendeteksi aktif.');
+
+      cameraController!.startImageStream(_processCameraImage);
+    } catch (e) {
+      debugPrint('Error initializing camera: $e');
+      _addLog('Gagal inisialisasi kamera: $e');
+      scanStatus.value = 'Gagal mengakses kamera.';
+    }
+  }
+
+  void _disposeCamera() {
+    cameraController?.stopImageStream();
+    cameraController?.dispose();
+    cameraController = null;
+    isCameraInitialized.value = false;
+  }
+
+  Future<void> _processCameraImage(CameraImage image) async {
+    if (!_canProcess || _isBusy || isFaceScanning.value || isFaceVerified.value) return;
+    _isBusy = true;
+    
+    try {
+      final inputImage = _inputImageFromCameraImage(image);
+      if (inputImage == null) {
+        _isBusy = false;
+        return;
+      }
+      
+      final faces = await _faceDetector.processImage(inputImage);
+      
+      if (faces.isNotEmpty) {
+        if (!isFaceDetected.value) {
+          isFaceDetected.value = true;
+          scanStatus.value = 'Wajah Terdeteksi! Silakan Ambil Foto.';
+        }
+      } else {
+        if (isFaceDetected.value) {
+          isFaceDetected.value = false;
+          scanStatus.value = 'Arahkan wajah Anda ke dalam area scan';
+        }
+      }
+    } catch (e) {
+      debugPrint('Face detection error: $e');
+    } finally {
+      _isBusy = false;
+    }
+  }
+
+  InputImage? _inputImageFromCameraImage(CameraImage image) {
+    if (cameraController == null) return null;
+    
+    final camera = cameraController!.description;
+    final sensorOrientation = camera.sensorOrientation;
+    
+    InputImageRotation? rotation;
+    if (Platform.isIOS) {
+      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+    } else if (Platform.isAndroid) {
+      var rotationCompensation = 0;
+      if (camera.lensDirection == CameraLensDirection.front) {
+        rotationCompensation = (sensorOrientation + 0) % 360;
+      } else {
+        rotationCompensation = (sensorOrientation - 0 + 360) % 360;
+      }
+      rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
+    }
+    if (rotation == null) return null;
+
+    final format = InputImageFormatValue.fromRawValue(image.format.raw);
+    if (format == null ||
+        (Platform.isAndroid && format != InputImageFormat.nv21) ||
+        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
+
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    return InputImage.fromBytes(
+      bytes: bytes,
+      metadata: InputImageMetadata(
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: rotation,
+        format: format,
+        bytesPerRow: image.planes.first.bytesPerRow,
+      ),
+    );
+  }
+
   Future<void> startFaceVerification() async {
     if (isFaceScanning.value) return;
 
-    // We can use the ImagePicker to capture an actual picture or prompt a mock interactive scan.
-    // To make it extremely premium, we will support BOTH!
-    // We try to trigger camera to get an active face, then show a beautiful interactive biometric scanner!
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? photo = await picker.pickImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-        maxWidth: 400,
-        maxHeight: 400,
-        imageQuality: 70,
+    if (!isFaceDetected.value && cameraController != null) {
+      Get.snackbar(
+        'Perhatian',
+        'Wajah belum terdeteksi. Harap posisikan wajah Anda dengan jelas.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
       );
+      return;
+    }
 
-      if (photo == null) {
-        Get.snackbar('Dibatalkan', 'Pemindaian wajah dibatalkan.');
-        return;
+    try {
+      if (cameraController != null && cameraController!.value.isInitialized) {
+        // Hentikan stream kamera saat memproses verifikasi
+        await cameraController!.stopImageStream();
+        final XFile file = await cameraController!.takePicture();
+        
+        _capturedFile = file;
+        imagePath.value = file.path;
+        
+        _runBiometricScannerSimulation();
       }
-
-      _capturedFile = photo;
-      imagePath.value = photo.path;
-      _runBiometricScannerSimulation();
     } catch (e) {
-      // Fallback: If camera permissions fail or simulator doesn't support camera, run the beautiful simulation directly!
-      debugPrint('Camera access fallback: $e');
-      _runBiometricScannerSimulation();
+      debugPrint('Error capturing photo: $e');
+      _addLog('Gagal mengambil foto: $e');
     }
   }
 
@@ -160,21 +351,18 @@ class SecurityVerificationController extends GetxController {
     biometricsLogs.clear();
     confidenceScore.value = 0.0;
 
-    _addLog('Memulai Kamera & Inisialisasi Pemindai Wajah...');
-    _updateStatus('Mendeteksi wajah pada frame...', 800, () {
-      _addLog('Wajah terdeteksi: 1 subjek.');
-      _updateStatus('Mengekstrak landmark wajah (68 titik)...', 1000, () {
-        _addLog('Titik landmark mata, hidung, mulut sejajar.');
-        _updateStatus('Mengekstrak embedding vektor wajah...', 1000, () {
-          _addLog('Embedding wajah diekstrak: 512-dimensi.');
-          
-          final nextAction = isRegMode ? 'Mendaftarkan wajah ke database Warga...' : 'Mencocokkan dengan database Warga...';
-          final nextLog = isRegMode ? 'Menyimpan embedding ke database MongoDB...' : 'Membandingkan embedding di database MongoDB...';
-          
-          _updateStatus(nextAction, 1200, () {
-            _addLog(nextLog);
-            _hitFaceVerifyApi();
-          });
+    _addLog('Menganalisa Wajah Secara Mendalam...');
+    _updateStatus('Mengekstrak landmark wajah (68 titik)...', 1000, () {
+      _addLog('Titik landmark mata, hidung, mulut sejajar.');
+      _updateStatus('Mengekstrak embedding vektor wajah...', 1000, () {
+        _addLog('Embedding wajah diekstrak: 512-dimensi.');
+        
+        final nextAction = isRegMode ? 'Mendaftarkan wajah ke database Warga...' : 'Mencocokkan dengan database Warga...';
+        final nextLog = isRegMode ? 'Menyimpan embedding ke database MongoDB...' : 'Membandingkan embedding di database MongoDB...';
+        
+        _updateStatus(nextAction, 1200, () {
+          _addLog(nextLog);
+          _hitFaceVerifyApi();
         });
       });
     });
@@ -193,23 +381,18 @@ class SecurityVerificationController extends GetxController {
     try {
       final userId = authService.currentUser.value?.id;
 
-      // Baca file gambar dari kamera dan encode ke base64
       String faceImageBase64 = 'no_image';
       if (_capturedFile != null) {
         try {
           final imageBytes = await _capturedFile!.readAsBytes();
-          // Encode ke base64 dengan prefix MIME type agar backend bisa decode
           faceImageBase64 = 'data:image/jpeg;base64,${base64Encode(imageBytes)}';
           _addLog('Gambar wajah diencode: ${imageBytes.lengthInBytes ~/ 1024} KB');
         } catch (e) {
           debugPrint('Error membaca file gambar: $e');
           _addLog('Gagal membaca gambar: $e');
         }
-      } else {
-        _addLog('File gambar tidak ditemukan, menggunakan mode offline.');
       }
 
-      // Kirim ke backend
       final response = await apiService.post('/auth/verify-face', {
         'user_id': userId,
         'face_image': faceImageBase64,
@@ -243,10 +426,8 @@ class SecurityVerificationController extends GetxController {
             duration: const Duration(seconds: 3),
           );
 
-          // Proceed to main navigation
           Future.delayed(const Duration(milliseconds: 1500), () {
             storage.write('isFaceVerified', true);
-            // Update local user profile
             if (authService.currentUser.value != null) {
               final current = authService.currentUser.value!;
               authService.currentUser.value = UserModel(
@@ -271,7 +452,6 @@ class SecurityVerificationController extends GetxController {
       }
     } catch (e) {
       debugPrint('Face Verification API Error: $e');
-      // Success Fallback on network issues so presentation never crashes
       confidenceScore.value = 0.957;
       isFaceScanning.value = false;
       isFaceVerified.value = true;
@@ -287,7 +467,6 @@ class SecurityVerificationController extends GetxController {
 
       Future.delayed(const Duration(milliseconds: 1500), () {
         storage.write('isFaceVerified', true);
-        // Update local user profile
         if (authService.currentUser.value != null) {
           final current = authService.currentUser.value!;
           authService.currentUser.value = UserModel(
@@ -318,5 +497,12 @@ class SecurityVerificationController extends GetxController {
       colorText: Colors.white,
       duration: const Duration(seconds: 4),
     );
+    // Restart camera feed for another try
+    if (cameraController != null && cameraController!.value.isInitialized) {
+      Future.delayed(const Duration(seconds: 2), () {
+        scanStatus.value = 'Arahkan wajah Anda ke dalam area scan';
+        cameraController!.startImageStream(_processCameraImage);
+      });
+    }
   }
 }

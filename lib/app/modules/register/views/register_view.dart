@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:camera/camera.dart';
 import '../controllers/register_controller.dart';
 
 class RegisterView extends GetView<RegisterController> {
@@ -19,7 +20,8 @@ class RegisterView extends GetView<RegisterController> {
     "Akun",
     "Kontak",
     "Keamanan",
-    "Verifikasi"
+    "Email",
+    "Wajah"
   ];
 
   @override
@@ -131,7 +133,7 @@ class RegisterView extends GetView<RegisterController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "SMART VILLAGE",
+                "SIMPEL",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -186,85 +188,86 @@ class RegisterView extends GetView<RegisterController> {
 
           // ================= STEP LIST =================
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(_steps.length * 2 - 1, (index) {
+              if (index % 2 != 0) {
+                // ================= LINE =================
+                final int i = index ~/ 2;
+                return Expanded(
+                  flex: 1,
+                  child: Container(
+                    height: 1.5,
+                    margin: const EdgeInsets.only(top: 15, left: 2, right: 2),
+                    color: i < current ? _primaryGreen : const Color(0xFFE8ECE5),
+                  ),
+                );
+              }
 
-            children: List.generate(_steps.length, (i) {
+              final int i = index ~/ 2;
               final done = i < current;
               final active = i == current;
 
-              return Row(
-                children: [
-                  Column(
-                    children: [
-                      // ================= STEP CIRCLE =================
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
+              return Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    // ================= STEP CIRCLE =================
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
 
-                        width: 30,
-                        height: 30,
+                      width: 30,
+                      height: 30,
 
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
 
-                          color: done || active
-                              ? _primaryGreen
-                              : const Color(0xFFE8ECE5),
-                        ),
+                        color: done || active
+                            ? _primaryGreen
+                            : const Color(0xFFE8ECE5),
+                      ),
 
-                        child: Center(
-                          child: done
-                              ? const Icon(
-                                  Icons.check_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                )
-                              : Text(
-                                  "${i + 1}",
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: active
-                                        ? Colors.white
-                                        : Colors.grey.shade400,
-                                  ),
+                      child: Center(
+                        child: done
+                            ? const Icon(
+                                Icons.check_rounded,
+                                size: 14,
+                                color: Colors.white,
+                              )
+                            : Text(
+                                "${i + 1}",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: active
+                                      ? Colors.white
+                                      : Colors.grey.shade400,
                                 ),
-                        ),
+                              ),
                       ),
-
-                      const SizedBox(height: 5),
-
-                      // ================= STEP LABEL =================
-                      Text(
-                        _steps[i],
-
-                        style: TextStyle(
-                          fontSize: 11,
-
-                          fontWeight: active || done
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-
-                          color: active || done
-                              ? _primaryGreen
-                              : Colors.grey.shade400,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // ================= LINE =================
-                  if (i < _steps.length - 1)
-                    Container(
-                      width: 38,
-                      height: 1.5,
-
-                      margin: const EdgeInsets.only(bottom: 18),
-
-                      color: i < current
-                          ? _primaryGreen
-                          : const Color(0xFFE8ECE5),
                     ),
-                ],
+
+                    const SizedBox(height: 5),
+
+                    // ================= STEP LABEL =================
+                    Text(
+                      _steps[i],
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+
+                        fontWeight: active || done
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+
+                        color: active || done
+                            ? _primaryGreen
+                            : Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
+                ),
               );
             }),
           ),
@@ -289,9 +292,12 @@ class RegisterView extends GetView<RegisterController> {
         return _stepKeamanan(key: const ValueKey(2));
 
       case 3:
+        return _stepVerifikasiEmail(context, key: const ValueKey(3));
+
+      case 4:
         return _stepVerifikasi(
           context,
-          key: const ValueKey(3),
+          key: const ValueKey(4),
         );
 
       default:
@@ -651,6 +657,187 @@ class RegisterView extends GetView<RegisterController> {
     );
   }
 
+  Widget _stepVerifikasiEmail(
+    BuildContext context, {
+    Key? key,
+  }) {
+    return SingleChildScrollView(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildStepTitle(
+            "Verifikasi Email",
+            "Verifikasi alamat email Anda untuk melanjutkan",
+            Icons.mark_email_read_outlined,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "Kode OTP akan dikirimkan ke alamat email berikut:",
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.mail_outline_rounded, color: _primaryGreen, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    controller.emailController.text,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Obx(() {
+            if (!controller.isOtpSent.value) {
+              return SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _primaryGreen,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  onPressed: controller.isLoading.value ? null : () => controller.sendOtp(),
+                  icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  label: const Text(
+                    'Kirim Kode OTP',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildFieldLabel("Masukkan 6-Digit OTP"),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  ctrl: controller.otpController,
+                  hint: "Contoh: 123456",
+                  icon: Icons.vpn_key_outlined,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(6),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Obx(() {
+                  if (controller.isOtpVerified.value) {
+                    return Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F8F2),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFDDE8D8)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.check_circle_outline_rounded, color: Colors.green, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              "Email berhasil diverifikasi!",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: _primaryGreen, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: controller.otpCooldown.value > 0 || controller.isLoading.value
+                                ? null
+                                : () => controller.sendOtp(),
+                            child: Obx(() => Text(
+                              controller.otpCooldown.value > 0
+                                  ? 'Kirim Ulang (${controller.otpCooldown.value}s)'
+                                  : 'Kirim Ulang OTP',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: _primaryGreen,
+                              ),
+                            )),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _primaryGreen,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: controller.isLoading.value ? null : () => controller.verifyOtp(),
+                            child: const Text(
+                              'Verifikasi',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _stepVerifikasi(
     BuildContext context, {
     Key? key,
@@ -667,6 +854,17 @@ class RegisterView extends GetView<RegisterController> {
             Icons.face_retouching_natural_rounded,
           ),
           const SizedBox(height: 24),
+
+          Obx(() => Text(
+            controller.scanStatus.value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: controller.isFaceDetected.value ? FontWeight.bold : FontWeight.normal,
+              color: controller.isFaceDetected.value ? Colors.green.shade700 : Colors.grey.shade600,
+            ),
+            textAlign: TextAlign.center,
+          )),
+          const SizedBox(height: 12),
           
           // Circular Face Scanner Circle
           _buildFaceScannerCircle(),
@@ -691,12 +889,12 @@ class RegisterView extends GetView<RegisterController> {
               height: 52,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryGreen,
+                  backgroundColor: controller.isFaceDetected.value ? _primaryGreen : Colors.grey.shade400,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                onPressed: controller.startFaceRegistration,
+                onPressed: controller.isFaceDetected.value ? controller.startFaceRegistration : null,
                 icon: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
                 label: const Text(
                   'Ambil Foto & Pindai Wajah',
@@ -709,6 +907,9 @@ class RegisterView extends GetView<RegisterController> {
               ),
             );
           }),
+          
+          const SizedBox(height: 24),
+          _buildDiagnosticLogs(),
         ],
       ),
     );
@@ -716,73 +917,67 @@ class RegisterView extends GetView<RegisterController> {
 
   // Circular Face Scanner Widget
   Widget _buildFaceScannerCircle() {
-    return Container(
-      width: 180,
-      height: 180,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: _primaryGreen,
-          width: 4,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _primaryGreen.withOpacity(0.15),
-            blurRadius: 16,
-            spreadRadius: 4,
+    return Obx(() {
+      final borderColor = controller.isFaceDetected.value ? Colors.greenAccent : _primaryGreen;
+      return Container(
+        width: 180,
+        height: 180,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: borderColor,
+            width: 4,
           ),
-        ],
-      ),
-      child: ClipOval(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // User Photo or Mock Avatar
-            Obx(() {
-              if (controller.imagePath.value.isNotEmpty) {
-                if (kIsWeb) {
-                  return Image.network(
-                    controller.imagePath.value,
-                    fit: BoxFit.cover,
-                  );
-                } else {
-                  return Image.file(
-                    File(controller.imagePath.value),
-                    fit: BoxFit.cover,
-                  );
-                }
-              }
-              return Container(
-                color: Colors.grey.shade100,
-                child: Icon(
-                  Icons.person_pin_rounded,
-                  color: Colors.grey.shade400,
-                  size: 100,
-                ),
-              );
-            }),
-            
-            // Cyber mesh grid vector layer
-            Opacity(
-              opacity: 0.15,
-              child: Image.network(
-                'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200',
-                fit: BoxFit.cover,
-                errorBuilder: (context, err, stack) => const SizedBox(),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: borderColor.withOpacity(0.15),
+              blurRadius: 16,
+              spreadRadius: 4,
             ),
-
-            // Scanning laser line animation
-            Obx(() {
-              if (controller.isFaceScanning.value) {
-                return const _ScanningLaserLine();
-              }
-              return const SizedBox();
-            }),
           ],
         ),
-      ),
-    );
+        child: ClipOval(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // User Photo or Live Camera
+              if (controller.imagePath.value.isNotEmpty)
+                kIsWeb
+                    ? Image.network(controller.imagePath.value, fit: BoxFit.cover)
+                    : Image.file(File(controller.imagePath.value), fit: BoxFit.cover)
+              else if (controller.isCameraInitialized.value && controller.cameraController != null)
+                Transform.scale(
+                  scale: 1.3,
+                  child: Center(child: CameraPreview(controller.cameraController!)),
+                )
+              else
+                Container(
+                  color: Colors.grey.shade100,
+                  child: Icon(
+                    Icons.person_pin_rounded,
+                    color: Colors.grey.shade400,
+                    size: 100,
+                  ),
+                ),
+              
+              // Cyber mesh grid vector layer
+              Opacity(
+                opacity: 0.15,
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, err, stack) => const SizedBox(),
+                ),
+              ),
+
+              // Scanning laser line animation
+              if (controller.isFaceScanning.value || (!controller.isFaceDetected.value && controller.imagePath.value.isEmpty))
+                const _ScanningLaserLine(),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   // Diagnostic Logs Console
@@ -903,7 +1098,9 @@ class RegisterView extends GetView<RegisterController> {
                     if (isLast) {
                       controller.register();
                     } else {
-                      controller.currentStep.value++;
+                      if (controller.validateCurrentStep()) {
+                        controller.currentStep.value++;
+                      }
                     }
                   },
 

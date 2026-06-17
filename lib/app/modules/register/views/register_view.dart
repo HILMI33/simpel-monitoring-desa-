@@ -3,7 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+<<<<<<< HEAD
 import 'package:camera/camera.dart';
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 import '../controllers/register_controller.dart';
 
 class RegisterView extends GetView<RegisterController> {
@@ -20,8 +23,12 @@ class RegisterView extends GetView<RegisterController> {
     "Akun",
     "Kontak",
     "Keamanan",
+<<<<<<< HEAD
     "Email",
     "Wajah"
+=======
+    "Verifikasi"
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   ];
 
   @override
@@ -133,7 +140,11 @@ class RegisterView extends GetView<RegisterController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
+<<<<<<< HEAD
                 "SIMPEL",
+=======
+                "SMART VILLAGE",
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -188,6 +199,7 @@ class RegisterView extends GetView<RegisterController> {
 
           // ================= STEP LIST =================
           Row(
+<<<<<<< HEAD
             crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(_steps.length * 2 - 1, (index) {
               if (index % 2 != 0) {
@@ -268,6 +280,87 @@ class RegisterView extends GetView<RegisterController> {
                     ),
                   ],
                 ),
+=======
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            children: List.generate(_steps.length, (i) {
+              final done = i < current;
+              final active = i == current;
+
+              return Row(
+                children: [
+                  Column(
+                    children: [
+                      // ================= STEP CIRCLE =================
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+
+                        width: 30,
+                        height: 30,
+
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+
+                          color: done || active
+                              ? _primaryGreen
+                              : const Color(0xFFE8ECE5),
+                        ),
+
+                        child: Center(
+                          child: done
+                              ? const Icon(
+                                  Icons.check_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                )
+                              : Text(
+                                  "${i + 1}",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: active
+                                        ? Colors.white
+                                        : Colors.grey.shade400,
+                                  ),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      // ================= STEP LABEL =================
+                      Text(
+                        _steps[i],
+
+                        style: TextStyle(
+                          fontSize: 11,
+
+                          fontWeight: active || done
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+
+                          color: active || done
+                              ? _primaryGreen
+                              : Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ================= LINE =================
+                  if (i < _steps.length - 1)
+                    Container(
+                      width: 38,
+                      height: 1.5,
+
+                      margin: const EdgeInsets.only(bottom: 18),
+
+                      color: i < current
+                          ? _primaryGreen
+                          : const Color(0xFFE8ECE5),
+                    ),
+                ],
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
               );
             }),
           ),
@@ -292,12 +385,18 @@ class RegisterView extends GetView<RegisterController> {
         return _stepKeamanan(key: const ValueKey(2));
 
       case 3:
+<<<<<<< HEAD
         return _stepVerifikasiEmail(context, key: const ValueKey(3));
 
       case 4:
         return _stepVerifikasi(
           context,
           key: const ValueKey(4),
+=======
+        return _stepVerifikasi(
+          context,
+          key: const ValueKey(3),
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
         );
 
       default:
@@ -657,6 +756,7 @@ class RegisterView extends GetView<RegisterController> {
     );
   }
 
+<<<<<<< HEAD
   Widget _stepVerifikasiEmail(
     BuildContext context, {
     Key? key,
@@ -838,6 +938,8 @@ class RegisterView extends GetView<RegisterController> {
     );
   }
 
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   Widget _stepVerifikasi(
     BuildContext context, {
     Key? key,
@@ -854,6 +956,7 @@ class RegisterView extends GetView<RegisterController> {
             Icons.face_retouching_natural_rounded,
           ),
           const SizedBox(height: 24),
+<<<<<<< HEAD
 
           Obx(() => Text(
             controller.scanStatus.value,
@@ -865,6 +968,8 @@ class RegisterView extends GetView<RegisterController> {
             textAlign: TextAlign.center,
           )),
           const SizedBox(height: 12),
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
           
           // Circular Face Scanner Circle
           _buildFaceScannerCircle(),
@@ -889,12 +994,20 @@ class RegisterView extends GetView<RegisterController> {
               height: 52,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
+<<<<<<< HEAD
                   backgroundColor: controller.isFaceDetected.value ? _primaryGreen : Colors.grey.shade400,
+=======
+                  backgroundColor: _primaryGreen,
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
+<<<<<<< HEAD
                 onPressed: controller.isFaceDetected.value ? controller.startFaceRegistration : null,
+=======
+                onPressed: controller.startFaceRegistration,
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                 icon: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
                 label: const Text(
                   'Ambil Foto & Pindai Wajah',
@@ -907,9 +1020,12 @@ class RegisterView extends GetView<RegisterController> {
               ),
             );
           }),
+<<<<<<< HEAD
           
           const SizedBox(height: 24),
           _buildDiagnosticLogs(),
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
         ],
       ),
     );
@@ -917,6 +1033,7 @@ class RegisterView extends GetView<RegisterController> {
 
   // Circular Face Scanner Widget
   Widget _buildFaceScannerCircle() {
+<<<<<<< HEAD
     return Obx(() {
       final borderColor = controller.isFaceDetected.value ? Colors.greenAccent : _primaryGreen;
       return Container(
@@ -978,6 +1095,75 @@ class RegisterView extends GetView<RegisterController> {
         ),
       );
     });
+=======
+    return Container(
+      width: 180,
+      height: 180,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: _primaryGreen,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryGreen.withOpacity(0.15),
+            blurRadius: 16,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // User Photo or Mock Avatar
+            Obx(() {
+              if (controller.imagePath.value.isNotEmpty) {
+                if (kIsWeb) {
+                  return Image.network(
+                    controller.imagePath.value,
+                    fit: BoxFit.cover,
+                  );
+                } else {
+                  return Image.file(
+                    File(controller.imagePath.value),
+                    fit: BoxFit.cover,
+                  );
+                }
+              }
+              return Container(
+                color: Colors.grey.shade100,
+                child: Icon(
+                  Icons.person_pin_rounded,
+                  color: Colors.grey.shade400,
+                  size: 100,
+                ),
+              );
+            }),
+            
+            // Cyber mesh grid vector layer
+            Opacity(
+              opacity: 0.15,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200',
+                fit: BoxFit.cover,
+                errorBuilder: (context, err, stack) => const SizedBox(),
+              ),
+            ),
+
+            // Scanning laser line animation
+            Obx(() {
+              if (controller.isFaceScanning.value) {
+                return const _ScanningLaserLine();
+              }
+              return const SizedBox();
+            }),
+          ],
+        ),
+      ),
+    );
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   }
 
   // Diagnostic Logs Console
@@ -1098,9 +1284,13 @@ class RegisterView extends GetView<RegisterController> {
                     if (isLast) {
                       controller.register();
                     } else {
+<<<<<<< HEAD
                       if (controller.validateCurrentStep()) {
                         controller.currentStep.value++;
                       }
+=======
+                      controller.currentStep.value++;
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                     }
                   },
 

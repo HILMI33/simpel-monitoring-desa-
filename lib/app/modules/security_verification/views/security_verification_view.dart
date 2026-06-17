@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+<<<<<<< HEAD
 import 'package:camera/camera.dart';
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 import '../controllers/security_verification_controller.dart';
 
 class SecurityVerificationView extends GetView<SecurityVerificationController> {
@@ -44,9 +47,13 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
+<<<<<<< HEAD
             child: Obx(() => controller.currentStep.value == 1
                 ? _buildOtpStepView(context)
                 : _buildFaceStepView(context)),
+=======
+            child: _buildFaceStepView(context),
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
           ),
         ),
       ),
@@ -79,11 +86,21 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
                 )),
                 const SizedBox(height: 6),
                 Obx(() => Text(
+<<<<<<< HEAD
                   controller.scanStatus.value,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: controller.isFaceDetected.value ? FontWeight.bold : FontWeight.normal,
                     color: controller.isFaceDetected.value ? Colors.green.shade700 : Colors.grey.shade600,
+=======
+                  controller.isRegMode
+                      ? 'Dekatkan wajah Anda ke kamera untuk meregistrasikan wajah ke profil warga Anda.'
+                      : 'Dekatkan wajah Anda ke kamera untuk mencocokkan wajah dengan profil warga terdaftar.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                   ),
                   textAlign: TextAlign.center,
                 )),
@@ -112,15 +129,26 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
                     height: 52,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
+<<<<<<< HEAD
                         backgroundColor: controller.isFaceDetected.value ? _primaryGreen : Colors.grey.shade400,
+=======
+                        backgroundColor: _primaryGreen,
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+<<<<<<< HEAD
                       onPressed: controller.isFaceDetected.value ? controller.startFaceVerification : null,
                       icon: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
                       label: Text(
                         controller.isRegMode ? 'Ambil Foto & Registrasi' : 'Ambil Foto & Pindai',
+=======
+                      onPressed: controller.startFaceVerification,
+                      icon: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
+                      label: Text(
+                        controller.isRegMode ? 'Ambil Foto & Registrasi Wajah' : 'Ambil Foto & Pindai Wajah',
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -140,6 +168,7 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
 
   // --- Face Scanner with Horizontal Laser Animation ---
   Widget _buildFaceScannerCircle() {
+<<<<<<< HEAD
     return Obx(() {
       final borderColor = controller.isFaceDetected.value ? Colors.greenAccent : _primaryGreen;
       return Container(
@@ -199,6 +228,75 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
         ),
       );
     });
+=======
+    return Container(
+      width: 200,
+      height: 200,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: _primaryGreen,
+          width: 4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryGreen.withOpacity(0.15),
+            blurRadius: 16,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // User Photo or Mock Avatar
+            Obx(() {
+              if (controller.imagePath.value.isNotEmpty) {
+                if (kIsWeb) {
+                  return Image.network(
+                    controller.imagePath.value,
+                    fit: BoxFit.cover,
+                  );
+                } else {
+                  return Image.file(
+                    File(controller.imagePath.value),
+                    fit: BoxFit.cover,
+                  );
+                }
+              }
+              return Container(
+                color: Colors.grey.shade100,
+                child: Icon(
+                  Icons.person_pin_rounded,
+                  color: Colors.grey.shade400,
+                  size: 110,
+                ),
+              );
+            }),
+            
+            // Cyber mesh grid vector layer
+            Opacity(
+              opacity: 0.25,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=200', // A mesh-like background texture
+                fit: BoxFit.cover,
+                errorBuilder: (context, err, stack) => const SizedBox(),
+              ),
+            ),
+
+            // Scanning laser line animation
+            Obx(() {
+              if (controller.isFaceScanning.value) {
+                return const _ScanningLaserLine();
+              }
+              return const SizedBox();
+            }),
+          ],
+        ),
+      ),
+    );
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   }
 
   // --- High-Tech Retro Diagnostic Terminal Cards ---
@@ -284,6 +382,7 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
       );
     });
   }
+<<<<<<< HEAD
 
   // --- Step 1: Email OTP View ---
   Widget _buildOtpStepView(BuildContext context) {
@@ -449,6 +548,8 @@ class SecurityVerificationView extends GetView<SecurityVerificationController> {
       ],
     );
   }
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 }
 
 // --- Stateful Laser Scanner animation class ---

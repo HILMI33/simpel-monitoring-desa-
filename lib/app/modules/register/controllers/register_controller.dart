@@ -1,4 +1,5 @@
 import 'dart:async';
+<<<<<<< HEAD
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -10,11 +11,21 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../../app/data/services/auth_service.dart';
 import '../../../../app/data/services/api_service.dart';
+=======
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../app/data/services/auth_service.dart';
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 
 class RegisterController extends GetxController {
   final box = GetStorage();
   final authService = Get.find<AuthService>();
+<<<<<<< HEAD
   final apiService = Get.find<ApiService>();
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 
   // ================= STEP =================
   var currentStep = 0.obs;
@@ -29,6 +40,7 @@ class RegisterController extends GetxController {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+<<<<<<< HEAD
   // ================= STEP 4: EMAIL OTP =================
   final otpController = TextEditingController();
   final isOtpSent = false.obs;
@@ -40,10 +52,17 @@ class RegisterController extends GetxController {
   final isFaceScanning = false.obs;
   final isFaceRegistered = false.obs;
   final scanStatus = 'Mempersiapkan Kamera...'.obs;
+=======
+  // ================= STEP 4: FACE REGISTRATION =================
+  final isFaceScanning = false.obs;
+  final isFaceRegistered = false.obs;
+  final scanStatus = 'Siap melakukan pemindaian wajah'.obs;
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   final confidenceScore = 0.0.obs;
   final biometricsLogs = <String>[].obs;
   final imagePath = ''.obs;
 
+<<<<<<< HEAD
   // ================= CAMERA & ML KIT =================
   CameraController? cameraController;
   final isCameraInitialized = false.obs;
@@ -69,6 +88,8 @@ class RegisterController extends GetxController {
     });
   }
 
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   // ================= HIDE PASSWORD =================
   final isPasswordHidden = true.obs;
   final isConfirmPasswordHidden = true.obs;
@@ -88,6 +109,7 @@ class RegisterController extends GetxController {
   }
 
   // ================= FACE SCAN ACTIONS =================
+<<<<<<< HEAD
   Future<void> _initializeCamera() async {
     if (kIsWeb) return;
     try {
@@ -226,6 +248,31 @@ class RegisterController extends GetxController {
       debugPrint('Error capturing photo: $e');
       _addLog('Gagal mengambil foto: $e');
       _runFaceRegistrationSimulation(); // Fallback
+=======
+  Future<void> startFaceRegistration() async {
+    if (isFaceScanning.value) return;
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? photo = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
+        maxWidth: 400,
+        maxHeight: 400,
+        imageQuality: 70,
+      );
+
+      if (photo == null) {
+        Get.snackbar('Dibatalkan', 'Pemindaian wajah dibatalkan.');
+        return;
+      }
+
+      imagePath.value = photo.path;
+      _runFaceRegistrationSimulation();
+    } catch (e) {
+      debugPrint('Camera access fallback: $e');
+      _runFaceRegistrationSimulation();
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     }
   }
 
@@ -270,6 +317,7 @@ class RegisterController extends GetxController {
     Timer(Duration(milliseconds: delayMs), callback);
   }
 
+<<<<<<< HEAD
   // ================= EMAIL OTP ACTIONS =================
   Future<void> sendOtp() async {
     final email = emailController.text.trim();
@@ -411,6 +459,8 @@ class RegisterController extends GetxController {
     return true;
   }
 
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
   // ================= REGISTER =================
   Future<void> register() async {
     // VALIDASI
@@ -439,6 +489,7 @@ class RegisterController extends GetxController {
       return;
     }
 
+<<<<<<< HEAD
     if (!isOtpVerified.value) {
       Get.snackbar(
         'Verifikasi Email Wajib',
@@ -450,6 +501,8 @@ class RegisterController extends GetxController {
       return;
     }
 
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     if (!isFaceRegistered.value) {
       Get.snackbar(
         'Verifikasi Wajah Wajib',
@@ -471,7 +524,10 @@ class RegisterController extends GetxController {
         nameController.text.trim(),
         rt: rtController.text.trim(),
         rw: rwController.text.trim(),
+<<<<<<< HEAD
         isEmailVerified: isOtpVerified.value,
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
       );
 
       if (success) {
@@ -493,9 +549,12 @@ class RegisterController extends GetxController {
 
   @override
   void onClose() {
+<<<<<<< HEAD
     _canProcess = false;
     _disposeCamera();
     _faceDetector.close();
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
@@ -503,8 +562,11 @@ class RegisterController extends GetxController {
     rwController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+<<<<<<< HEAD
     otpController.dispose();
     _cooldownTimer?.cancel();
+=======
+>>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     super.onClose();
   }
 }

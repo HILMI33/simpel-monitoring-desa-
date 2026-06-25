@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controllers/chat_controller.dart';
 
 class ChatView extends GetView<ChatController> {
@@ -24,31 +25,45 @@ class ChatView extends GetView<ChatController> {
       body: Column(
         children: [
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                _buildChatBubble(
-                  text: "Halo Andi, terima kasih atas laporan via Laporan Anda sedang kami verifikasi.",
-                  time: "15 Mei 2024, 11:20",
-                  isMe: false,
-                ),
-                _buildChatBubble(
-                  text: "Baik, terima kasih 🙏",
-                  time: "15 Mei 2024, 11:25",
-                  isMe: true,
-                ),
-                _buildChatBubble(
-                  text: "Kami butuh info lapangan lebih lanjut untuk penanganan lebih lanjut.",
-                  time: "15 Mei 2024, 12:10",
-                  isMe: false,
-                ),
-                _buildChatBubble(
-                  text: "Siap, ditunggu informasinya selanjutnya.",
-                  time: "15 Mei 2024, 12:14",
-                  isMe: true,
-                ),
-              ],
-            ),
+            child: Obx(() {
+              if (controller.isLoading.value && controller.messages.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              if (controller.messages.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey.shade300),
+                      const SizedBox(height: 16),
+                      Text("Mulai percakapan dengan admin", style: TextStyle(color: Colors.grey.shade500)),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                controller: controller.scrollController,
+                padding: const EdgeInsets.all(20),
+                itemCount: controller.messages.length,
+                itemBuilder: (context, index) {
+                  final msg = controller.messages[index];
+                  final isMe = msg.senderRole == 'warga';
+                  
+                  String timeStr = '';
+                  if (msg.createdAt != null) {
+                    timeStr = DateFormat('dd MMM yyyy, HH:mm').format(msg.createdAt!.toLocal());
+                  }
+
+                  return _buildChatBubble(
+                    text: msg.message,
+                    time: timeStr,
+                    isMe: isMe,
+                  );
+                },
+              );
+            }),
           ),
           
           // Input Bar
@@ -80,6 +95,7 @@ class ChatView extends GetView<ChatController> {
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
+                        onSubmitted: (_) => controller.sendMessage(),
                       ),
                     ),
                   ),
@@ -87,9 +103,15 @@ class ChatView extends GetView<ChatController> {
                   CircleAvatar(
                     backgroundColor: primaryColor,
                     radius: 24,
-                    child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
-                      onPressed: () {},
+                    child: Obx(() => controller.isSending.value 
+                      ? const SizedBox(
+                          width: 20, height: 20, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.send, color: Colors.white),
+                          onPressed: controller.sendMessage,
+                        )
                     ),
                   ),
                 ],

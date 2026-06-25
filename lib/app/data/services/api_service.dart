@@ -9,9 +9,9 @@ class ApiService extends GetxService {
   // - Di Web Browser: menggunakan localhost
   // - Di HP Asli / Emulator: menggunakan IP Lokal PC Anda (192.168.18.10)
   //   (Pastikan HP dan Laptop terhubung ke Wi-Fi / Hotspot yang sama!)
-  final String baseUrl = kIsWeb 
-      ? 'http://localhost:5005/api' 
-      : 'http://192.168.18.10:5005/api'; 
+  final String baseUrl = kIsWeb
+      ? 'http://localhost:5005/api'
+      : 'http://192.168.18.10:5005/api';
   final GetStorage storage = GetStorage();
 
   Map<String, String> get _headers {
@@ -34,11 +34,41 @@ class ApiService extends GetxService {
     );
   }
 
-  Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
+  Future<http.Response> patch(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     return await http.patch(
       Uri.parse('$baseUrl$endpoint'),
       headers: _headers,
       body: jsonEncode(data),
     );
+  }
+
+  Future<http.Response> put(String endpoint, Map<String, dynamic> data) async {
+    return await http.put(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: _headers,
+      body: jsonEncode(data),
+    );
+  }
+
+  Future<String?> uploadImage(String filePath) async {
+    final token = storage.read('token');
+    var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload/'));
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
+
+    var response = await request.send();
+    if (response.statusCode == 201) {
+      final resStr = await response.stream.bytesToString();
+      final decoded = jsonDecode(resStr);
+      return decoded['imageUrl'];
+    }
+    return null;
   }
 }

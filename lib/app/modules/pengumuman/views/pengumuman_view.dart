@@ -175,7 +175,7 @@ class PengumumanView extends GetView<PengumumanController> {
           ),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: () {},
+            onTap: () => _showAnnouncementDetail(title, content, date, imageUrl, author),
             child: const Text(
               "Baca Selengkapnya",
               style: TextStyle(color: Color(0xFF5B67F1), fontWeight: FontWeight.bold, fontSize: 13),
@@ -183,6 +183,66 @@ class PengumumanView extends GetView<PengumumanController> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAnnouncementDetail(String title, String content, String date, String imageUrl, String author) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF1A1A2E), height: 1.3),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.campaign_rounded, color: Color(0xFF5B67F1), size: 18),
+                  const SizedBox(width: 8),
+                  Text(author, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF1A1A2E))),
+                  const SizedBox(width: 12),
+                  const Icon(Icons.access_time_rounded, color: Colors.grey, size: 16),
+                  const SizedBox(width: 6),
+                  Text(date, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              if (imageUrl.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(imageUrl, width: double.infinity, fit: BoxFit.cover),
+                ),
+                const SizedBox(height: 20),
+              ],
+              Text(
+                content,
+                style: const TextStyle(color: Color(0xFF1A1A2E), fontSize: 15, height: 1.6),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

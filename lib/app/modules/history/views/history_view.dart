@@ -137,16 +137,20 @@ class HistoryView extends GetView<HistoryController> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: controller.filteredReports.length,
-                itemBuilder: (context, index) {
-                  final report = controller.filteredReports[index];
-                  return _buildHistoryCard(
-                    report: report,
-                    onTap: () => Get.toNamed(Routes.DETAIL_REPORT, arguments: report),
-                  );
-                },
+              return RefreshIndicator(
+                onRefresh: controller.fetchReports,
+                color: const Color(0xFF5B67F1),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: controller.filteredReports.length,
+                  itemBuilder: (context, index) {
+                    final report = controller.filteredReports[index];
+                    return _buildHistoryCard(
+                      report: report,
+                      onTap: () => Get.toNamed(Routes.DETAIL_REPORT, arguments: report),
+                    );
+                  },
+                ),
               );
             }),
           ),

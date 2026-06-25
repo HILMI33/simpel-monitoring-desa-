@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../controllers/detail_pembangunan_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -22,158 +23,115 @@ class DetailPembangunanView extends GetView<DetailPembangunanController> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Image Header
-            Stack(
-              children: [
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  color: Colors.grey.shade300,
-                  child: const Icon(Icons.construction, size: 80, color: Colors.grey),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      "Sedang Berjalan",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: Obx(() {
+        final project = controller.project.value;
+        if (project == null) {
+          return const Center(child: Text("Data tidak ditemukan"));
+        }
+
+        final period = project.startDate != null 
+            ? "${DateFormat('dd MMM yyyy').format(project.startDate!)} - ${project.endDate != null ? DateFormat('dd MMM yyyy').format(project.endDate!) : 'Selesai'}"
+            : "Tidak diketahui";
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Hero Image Header
+              Stack(
                 children: [
-                  const Text(
-                    "Perbaikan Jalan Desa",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      image: project.imageUrl.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(project.imageUrl), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: project.imageUrl.isEmpty 
+                        ? const Icon(Icons.construction, size: 80, color: Colors.grey)
+                        : null,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Lokasi: Dusun Krajan",
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Periode: 01 Mei - 30 Mei 2024",
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                  ),
-                  const SizedBox(height: 20),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: 0.55,
-                            backgroundColor: Colors.grey.shade200,
-                            color: Colors.blue,
-                            minHeight: 10,
-                          ),
-                        ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: project.progress == 100 ? Colors.blue : Colors.green,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(width: 12),
-                      const Text("55%", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  const Text("Deskripsi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Perbaikan jalan desa sepanjang 1,2 km untuk meningkatkan akses warga.",
-                    style: TextStyle(color: Colors.grey.shade800),
-                  ),
-                  const SizedBox(height: 24),
-
-                  const Text("Update Terbaru", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 16),
-                  
-                  _buildTimelineItem(
-                    date: "15 Mei 2024, 09:30",
-                    title: "Pengerasan jalan sepanjang 500m",
-                  ),
-                  _buildTimelineItem(
-                    date: "10 Mei 2024, 10:15",
-                    title: "Pembersihan area dan penggalian",
-                    isLast: true,
-                  ),
-
-                  const SizedBox(height: 30),
-                  
-                  ElevatedButton(
-                    onPressed: () => Get.toNamed(Routes.UPDATE_PROGRES),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      child: Text(
+                        project.progress == 100 ? "Selesai" : "Sedang Berjalan",
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                       ),
                     ),
-                    child: const Text("Lihat Semua Update", style: TextStyle(fontSize: 16)),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+              
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.title,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Periode: $period",
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                    ),
+                    const SizedBox(height: 20),
 
-  Widget _buildTimelineItem({required String date, required String title, bool isLast = false}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: project.progress / 100,
+                              backgroundColor: Colors.grey.shade200,
+                              color: Colors.blue,
+                              minHeight: 10,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text("${project.progress}%", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    const Text("Deskripsi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Text(
+                      project.description,
+                      style: TextStyle(color: Colors.grey.shade800),
+                    ),
+                    const SizedBox(height: 30),
+                    
+                    ElevatedButton(
+                      onPressed: () => Get.toNamed(Routes.UPDATE_PROGRES, arguments: project),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Lihat Semua Update", style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 40,
-                color: Colors.blue,
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              date,
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        );
+      }),
     );
   }
 }

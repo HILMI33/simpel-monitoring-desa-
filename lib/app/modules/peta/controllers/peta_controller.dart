@@ -31,13 +31,36 @@ class PetaController extends GetxController {
   Future<void> getCurrentLocation() async {
     isLoading.value = true;
     try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied');
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied.');
+      }
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       currentLocation.value = LatLng(position.latitude, position.longitude);
       mapController.move(currentLocation.value, 15.0);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mendapatkan lokasi: $e');
+      Get.snackbar(
+        'Lokasi Default', 
+        'Menggunakan lokasi default karena akses lokasi perangkat tidak diberikan.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.black87,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }

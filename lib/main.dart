@@ -8,10 +8,11 @@ import 'app/routes/app_pages.dart';
 import 'app/data/services/auth_service.dart';
 import 'app/data/services/api_service.dart';
 import 'app/data/services/firestore_service.dart';
-// import 'app/data/services/notification_service.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
 
   await GetStorage.init();
 

@@ -23,26 +23,7 @@ class DashboardController extends GetxController {
 
   final currentBannerIndex = 0.obs;
   
-  final banners = [
-    {
-      'title': 'Waspada Demam Berdarah',
-      'subtitle': 'Jaga kebersihan lingkungan dengan 3M Plus',
-      'color': const Color(0xFFE53935), 
-      'icon': Icons.warning_rounded,
-    },
-    {
-      'title': 'Bantuan Langsung Tunai',
-      'subtitle': 'Pencairan tahap 2 dimulai minggu depan',
-      'color': const Color(0xFF43A047), 
-      'icon': Icons.payments_rounded,
-    },
-    {
-      'title': 'Lapor Cepat',
-      'subtitle': 'Gunakan fitur Laporan untuk keluhan warga',
-      'color': const Color(0xFF5B67F1), 
-      'icon': Icons.flash_on_rounded,
-    },
-  ].obs;
+  final banners = <PengumumanModel>[].obs;
 
   final isLoading = true.obs;
 
@@ -89,7 +70,16 @@ class DashboardController extends GetxController {
       final announceRes = await apiService.get('/announcements/');
       if (announceRes.statusCode == 200) {
         final List<dynamic> data = jsonDecode(announceRes.body);
-        recentAnnouncements.value = data.map((json) => PengumumanModel.fromJson(json)).take(2).toList();
+        final allAnnouncements = data.map((json) => PengumumanModel.fromJson(json)).toList();
+        recentAnnouncements.value = allAnnouncements.take(2).toList();
+        
+        final carouselBanners = allAnnouncements.where((a) => a.isCarousel).toList();
+        if (carouselBanners.isNotEmpty) {
+          banners.value = carouselBanners;
+        } else {
+          // Fallback empty to not break
+          banners.clear();
+        }
       }
     } catch (e) {
       debugPrint('Error fetching dashboard data: $e');

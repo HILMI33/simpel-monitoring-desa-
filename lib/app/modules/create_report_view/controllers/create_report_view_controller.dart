@@ -9,6 +9,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../../../app/data/services/api_service.dart';
 import '../../../../app/data/services/auth_service.dart';
 import '../../../../app/data/models/report_model.dart';
+import '../../../../app/modules/dashboard/controllers/dashboard_controller.dart';
+import '../../../../app/modules/history/controllers/history_controller.dart';
 
 class CreateReportViewController extends GetxController {
   final ImagePicker _picker = ImagePicker();
@@ -42,8 +44,8 @@ class CreateReportViewController extends GetxController {
   };
 
   // Location Data
-  var latitude = 0.0.obs;
-  var longitude = 0.0.obs;
+  var latitude = (-6.881728).obs; // Default Desa Bongkok
+  var longitude = (109.185469).obs; // Default Desa Bongkok
   var address = 'Sedang mencari lokasi...'.obs;
 
   @override
@@ -67,8 +69,14 @@ class CreateReportViewController extends GetxController {
       longitude.value = position.longitude;
       address.value = "Lokasi terdeteksi otomatis";
     } catch (e) {
-      address.value = "Gagal mendapatkan lokasi";
+      address.value = "Gagal mendapatkan lokasi, menggunakan lokasi default";
     }
+  }
+
+  void updateLocation(double lat, double lng) {
+    latitude.value = lat;
+    longitude.value = lng;
+    address.value = "Lokasi dipilih dari peta";
   }
 
   Future<void> pickImage(ImageSource source) async {
@@ -124,7 +132,14 @@ class CreateReportViewController extends GetxController {
 
     isLoading.value = true;
     try {
-      // Judul otomatis: "Kategori - SubKategori"
+      String imageUrl = '';
+      if (selectedImages.isNotEmpty) {
+        String? uploadedUrl = await apiService.uploadImage(selectedImages.first.path);
+        if (uploadedUrl != null) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
       String autoTitle = "${selectedCategory.value} - ${selectedSubCategory.value}";
 
       final response = await apiService.post('/reports/', {
@@ -132,10 +147,16 @@ class CreateReportViewController extends GetxController {
         'description': descriptionController.text,
         'category': selectedCategory.value,
         'coordinates': [latitude.value, longitude.value],
-        'imageUrl': '', 
+        'imageUrl': imageUrl, 
       });
 
       if (response.statusCode == 201) {
+        if (Get.isRegistered<DashboardController>()) {
+          Get.find<DashboardController>().refreshData();
+        }
+        if (Get.isRegistered<HistoryController>()) {
+          Get.find<HistoryController>().fetchReports();
+        }
         Get.back();
         Get.snackbar('Berhasil', 'Laporan Anda telah terkirim',
             snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);

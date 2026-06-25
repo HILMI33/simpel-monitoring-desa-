@@ -11,6 +11,7 @@ class UserModel {
   final DateTime? createdAt;
   final bool isFaceRegistered;
   final bool isEmailVerified;
+  final String phone;
 
   UserModel({
     required this.id,
@@ -23,6 +24,7 @@ class UserModel {
     this.createdAt,
     this.isFaceRegistered = false,
     this.isEmailVerified = false,
+    this.phone = '',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class UserModel {
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       isFaceRegistered: json['is_face_registered'] ?? false,
       isEmailVerified: json['is_email_verified'] ?? false,
+      phone: json['phone'] ?? '',
     );
   }
 
@@ -78,6 +81,7 @@ class UserModel {
       'created_at': createdAt?.toIso8601String(),
       'is_face_registered': isFaceRegistered,
       'is_email_verified': isEmailVerified,
+      'phone': phone,
     };
   }
 }

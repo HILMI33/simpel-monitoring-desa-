@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../controllers/create_report_view_controller.dart';
 
 class CreateReportView extends GetView<CreateReportViewController> {
@@ -106,37 +108,40 @@ class CreateReportView extends GetView<CreateReportViewController> {
                   ),
                   const SizedBox(height: 24),
 
-                  const Text("Lokasi (Otomatis)", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E), fontSize: 15)),
+                  const Text("Lokasi Laporan", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A2E), fontSize: 15)),
                   const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Obx(() => Text(
-                              controller.address.value,
-                              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
-                            )),
-                          ),
-                        ),
-                        Container(
-                          width: 80,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
+                  GestureDetector(
+                    onTap: () => _showMapPicker(context),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Obx(() => Text(
+                                controller.address.value,
+                                style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.5),
+                              )),
                             ),
                           ),
-                          child: Icon(Icons.map_rounded, color: Colors.grey.shade500, size: 32),
-                        )
-                      ],
+                          Container(
+                            width: 80,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5B67F1).withOpacity(0.1),
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            child: const Icon(Icons.map_rounded, color: Color(0xFF5B67F1), size: 32),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -277,6 +282,85 @@ class CreateReportView extends GetView<CreateReportViewController> {
           const SizedBox(width: 12),
           Text(value, style: const TextStyle(fontSize: 14)),
         ],
+      ),
+    );
+  }
+
+  void _showMapPicker(BuildContext context) {
+    LatLng selectedLocation = LatLng(controller.latitude.value, controller.longitude.value);
+    final mapController = MapController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.all(20),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: SizedBox(
+            height: 450,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    initialCenter: selectedLocation,
+                    initialZoom: 15,
+                    onPositionChanged: (position, hasGesture) {
+                      if (position.center != null) {
+                        selectedLocation = position.center!;
+                      }
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.hilmi33.simpel',
+                    ),
+                  ],
+                ),
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 40.0),
+                    child: Icon(
+                      Icons.location_on,
+                      size: 50,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      controller.updateLocation(selectedLocation.latitude, selectedLocation.longitude);
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5B67F1),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Pilih Lokasi Ini", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black),
+                      onPressed: () => Get.back(),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

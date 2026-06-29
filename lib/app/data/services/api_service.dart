@@ -5,13 +5,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:flutter/foundation.dart'; // Diperlukan untuk mendeteksi kIsWeb
 
 class ApiService extends GetxService {
-  // Deteksi platform otomatis:
-  // - Di Web Browser: menggunakan localhost
-  // - Di HP Asli / Emulator: menggunakan IP Lokal PC Anda (192.168.18.10)
-  //   (Pastikan HP dan Laptop terhubung ke Wi-Fi / Hotspot yang sama!)
-  final String baseUrl = kIsWeb
-      ? 'http://localhost:5005/api'
-      : 'http://192.168.18.10:5005/api';
+  // URL backend Railway yang baru
+  final String baseUrl = 'https://vibrant-contentment-production-1625.up.railway.app/api';
   final GetStorage storage = GetStorage();
 
   Map<String, String> get _headers {

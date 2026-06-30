@@ -49,21 +49,21 @@ class ProfileView extends GetView<ProfileController> {
                                 ),
                               )),
                               const SizedBox(height: 8),
-                              Obx(() => Container(
+                              Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: controller.isEmailVerified.value ? Colors.green.shade50 : Colors.grey.shade200,
+                                  color: Colors.green.shade50,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  controller.isEmailVerified.value ? "Email Terverifikasi" : "Email Belum Terverifikasi",
+                                  "Email Terverifikasi",
                                   style: TextStyle(
-                                    color: controller.isEmailVerified.value ? Colors.green.shade700 : Colors.grey.shade700,
+                                    color: Colors.green.shade700,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                              )),
+                              ),
                             ],
                           ),
                           GestureDetector(
@@ -105,18 +105,6 @@ class ProfileView extends GetView<ProfileController> {
                       // Two Cards Row
                       Row(
                         children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => controller.requestEmailVerification(),
-                              child: Obx(() => _buildActionCard(
-                                icon: controller.isEmailVerified.value ? Icons.verified : Icons.error_outline,
-                                iconColor: controller.isEmailVerified.value ? Colors.teal : Colors.orange,
-                                title: "Verifikasi Email",
-                                subtitle: controller.isEmailVerified.value ? "Sudah Terverifikasi" : "Ajukan\nsekarang",
-                              )),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
                           Expanded(
                             child: GestureDetector(
                               onTap: () => Get.toNamed('/account-details'),

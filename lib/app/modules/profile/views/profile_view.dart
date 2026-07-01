@@ -48,6 +48,7 @@ class ProfileView extends GetView<ProfileController> {
                                   color: Color(0xFF1A1A2E),
                                 ),
                               )),
+
                               const SizedBox(height: 8),
                               Obx(() => Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

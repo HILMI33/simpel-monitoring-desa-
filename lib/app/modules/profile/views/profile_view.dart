@@ -48,6 +48,14 @@ class ProfileView extends GetView<ProfileController> {
                                   color: Color(0xFF1A1A2E),
                                 ),
                               )),
+Obx(() => Text(
+  "Hai, ${controller.userName.value.split(' ').first}",
+  style: const TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+    color: Color(0xFF1A1A2E),
+  ),
+)),
 
 const SizedBox(height: 8),
 Container(
@@ -65,7 +73,6 @@ Container(
     ),
   ),
 ),
-
                             ],
                           ),
                           GestureDetector(

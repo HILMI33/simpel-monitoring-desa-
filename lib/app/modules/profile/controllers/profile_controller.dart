@@ -20,7 +20,6 @@ class ProfileController extends GetxController {
   final userEmail = '-'.obs;
   final userRT = '-'.obs;
   final userRW = '-'.obs;
-  final isEmailVerified = false.obs;
 
   final isIndonesian = true.obs; // Language toggle mock
   final isLoading = false.obs;
@@ -43,7 +42,6 @@ class ProfileController extends GetxController {
       userPhone.value = user.phone.isNotEmpty ? user.phone : '-';
       userRT.value = user.rt.isNotEmpty ? user.rt : '-';
       userRW.value = user.rw.isNotEmpty ? user.rw : '-';
-      isEmailVerified.value = user.isEmailVerified;
     }
   }
 
@@ -163,91 +161,6 @@ class ProfileController extends GetxController {
       } finally {
         isLoading.value = false;
       }
-    }
-  }
-
-  Future<void> requestEmailVerification() async {
-    if (isEmailVerified.value) {
-      Get.snackbar(
-        'Informasi',
-        'Email Anda sudah terverifikasi.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    isLoading.value = true;
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
-    try {
-      final res = await apiService.post('/auth/send-otp', {
-        'email': userEmail.value,
-        'type': 'login',
-      });
-
-      Get.back(); // close dialog
-      if (res.statusCode == 200) {
-        Get.toNamed('/email-verification');
-      } else {
-        Get.snackbar(
-          'Gagal',
-          'Tidak dapat mengirim OTP',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-    } catch (e) {
-      Get.back();
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan sistem',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> verifyOTP(String code) async {
-    isLoading.value = true;
-    try {
-      final res = await apiService.post('/auth/verify-otp', {
-        'email': userEmail.value,
-        'code': code,
-      });
-
-      if (res.statusCode == 200) {
-        isEmailVerified.value = true;
-        // Update user model locally
-        final user = authService.currentUser.value;
-        if (user != null) {
-          authService.currentUser.value =
-              user; // Triggers UI update if needed, but we already have isEmailVerified.value
-        }
-        Get.back(); // Back to profile
-        Get.snackbar(
-          'Berhasil',
-          'Email telah terverifikasi!',
-          backgroundColor: Colors.green.shade600,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      } else {
-        Get.snackbar(
-          'Gagal',
-          'Kode OTP salah atau kedaluwarsa',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Terjadi kesalahan sistem',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading.value = false;
     }
   }
 

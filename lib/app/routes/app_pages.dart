@@ -30,7 +30,6 @@ import '../modules/update_progres/bindings/update_progres_binding.dart';
 import '../modules/update_progres/views/update_progres_view.dart';
 import '../modules/security_verification/bindings/security_verification_binding.dart';
 import '../modules/security_verification/views/security_verification_view.dart';
-import '../modules/profile/views/email_verification_view.dart';
 import '../modules/profile/views/account_details_view.dart';
 import '../modules/profile/views/edit_profile_view.dart';
 import '../modules/profile/views/activity_log_view.dart';
@@ -114,11 +113,6 @@ class AppPages {
       name: Routes.SECURITY_VERIFICATION,
       page: () => const SecurityVerificationView(),
       binding: SecurityVerificationBinding(),
-    ),
-    GetPage(
-      name: Routes.EMAIL_VERIFICATION,
-      page: () => const EmailVerificationView(),
-      // Use existing profile binding if needed, or simply no binding if ProfileController is already in memory
     ),
     GetPage(
       name: Routes.ACCOUNT_DETAILS,

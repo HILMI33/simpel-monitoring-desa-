@@ -36,8 +36,12 @@ class DashboardView extends GetView<DashboardController> {
               child: DashboardShimmer(),
             );
           }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          return RefreshIndicator(
+            onRefresh: controller.refreshData,
+            color: _primary,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -81,6 +85,7 @@ class DashboardView extends GetView<DashboardController> {
                                   icon: Icons.campaign_rounded,
                                   title: ann.title,
                                   subtitle: ann.content,
+                                  imageUrl: ann.imageUrl,
                                   date: ann.createdAt != null
                                       ? DateFormat(
                                           'dd MMM yyyy',
@@ -93,6 +98,7 @@ class DashboardView extends GetView<DashboardController> {
                 ),
                 const SizedBox(height: 80),
               ],
+            ),
             ),
           );
         }),

@@ -7,6 +7,8 @@ class AnnouncementCard extends StatelessWidget {
   final String date;
   final bool isNew;
 
+  final String? imageUrl;
+
   const AnnouncementCard({
     super.key,
     required this.icon,
@@ -14,9 +16,21 @@ class AnnouncementCard extends StatelessWidget {
     required this.subtitle,
     required this.date,
     this.isNew = false,
+    this.imageUrl,
   });
 
   static const _primary = Color(0xFF5B67F1);
+
+  Widget _buildIcon() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: _primary, size: 22),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +50,19 @@ class AnnouncementCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _primary.withOpacity(0.1),
+          if (imageUrl != null && imageUrl!.isNotEmpty)
+            ClipRRect(
               borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: _primary, size: 22),
-          ),
+              child: Image.network(
+                imageUrl!,
+                width: 46,
+                height: 46,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildIcon(),
+              ),
+            )
+          else
+            _buildIcon(),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

@@ -30,11 +30,7 @@ class AuthService extends GetxService {
   }
 
   // Register via Flask
-<<<<<<< HEAD
   Future<bool> register(String email, String password, String name, {String rt = '', String rw = '', bool isEmailVerified = false}) async {
-=======
-  Future<bool> register(String email, String password, String name, {String rt = '', String rw = ''}) async {
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     try {
       final response = await _api.post('/auth/register', {
         'name': name,
@@ -43,10 +39,7 @@ class AuthService extends GetxService {
         'role': 'warga',
         'rt': rt,
         'rw': rw,
-<<<<<<< HEAD
         'is_email_verified': isEmailVerified,
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
       });
 
       if (response.statusCode == 201) {
@@ -105,7 +98,6 @@ class AuthService extends GetxService {
         scopes: ['email', 'profile'],
       );
       
-<<<<<<< HEAD
       // 2. Memicu login Google (Selalu paksa pilih akun)
       try {
         await googleSignIn.disconnect();
@@ -113,9 +105,6 @@ class AuthService extends GetxService {
       try {
         await googleSignIn.signOut();
       } catch (_) {}
-=======
-      // 2. Memicu login Google
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       
       if (googleUser == null) {

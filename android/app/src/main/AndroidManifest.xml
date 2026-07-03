@@ -1,21 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-<<<<<<< HEAD
     <!-- Permission Internet & GPS -->
     <uses-permission android:name="android.permission.INTERNET" />
-=======
-    <!-- Permission GPS -->
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:label="simpel"
         android:name="${applicationName}"
-<<<<<<< HEAD
         android:usesCleartextTraffic="true"
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
         android:icon="@mipmap/ic_launcher">
 
         <activity

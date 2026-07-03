@@ -30,6 +30,9 @@ import '../modules/update_progres/bindings/update_progres_binding.dart';
 import '../modules/update_progres/views/update_progres_view.dart';
 import '../modules/security_verification/bindings/security_verification_binding.dart';
 import '../modules/security_verification/views/security_verification_view.dart';
+import '../modules/profile/views/account_details_view.dart';
+import '../modules/profile/views/edit_profile_view.dart';
+import '../modules/profile/views/activity_log_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -110,6 +113,18 @@ class AppPages {
       name: Routes.SECURITY_VERIFICATION,
       page: () => const SecurityVerificationView(),
       binding: SecurityVerificationBinding(),
+    ),
+    GetPage(
+      name: Routes.ACCOUNT_DETAILS,
+      page: () => const AccountDetailsView(),
+    ),
+    GetPage(
+      name: Routes.EDIT_PROFILE,
+      page: () => const EditProfileView(),
+    ),
+    GetPage(
+      name: Routes.ACTIVITY_LOG,
+      page: () => const ActivityLogView(),
     ),
   ];
 }

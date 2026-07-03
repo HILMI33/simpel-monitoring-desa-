@@ -12,6 +12,7 @@ class PembangunanModel {
   final String imageUrl;
   final DateTime? startDate;
   final DateTime? endDate;
+  final List<String> followers;
 
   PembangunanModel({
     required this.id,
@@ -25,6 +26,7 @@ class PembangunanModel {
     this.imageUrl = '',
     this.startDate,
     this.endDate,
+    this.followers = const [],
   });
 
   factory PembangunanModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class PembangunanModel {
       imageUrl: json['imageUrl'] ?? '',
       startDate: json['startDate'] != null ? DateTime.parse(json['startDate']) : null,
       endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      followers: List<String>.from(json['followers'] ?? []),
     );
   }
 

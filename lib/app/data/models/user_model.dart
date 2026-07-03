@@ -10,10 +10,8 @@ class UserModel {
   final String rw;
   final DateTime? createdAt;
   final bool isFaceRegistered;
-<<<<<<< HEAD
   final bool isEmailVerified;
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
+  final String phone;
 
   UserModel({
     required this.id,
@@ -25,10 +23,8 @@ class UserModel {
     this.rw = '',
     this.createdAt,
     this.isFaceRegistered = false,
-<<<<<<< HEAD
     this.isEmailVerified = false,
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
+    this.phone = '',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -42,10 +38,8 @@ class UserModel {
       rw: json['rw'] ?? '',
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       isFaceRegistered: json['is_face_registered'] ?? false,
-<<<<<<< HEAD
       isEmailVerified: json['is_email_verified'] ?? false,
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
+      phone: json['phone'] ?? '',
     );
   }
 
@@ -74,7 +68,6 @@ class UserModel {
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
     };
   }
-<<<<<<< HEAD
 
   Map<String, dynamic> toJson() {
     return {
@@ -88,8 +81,7 @@ class UserModel {
       'created_at': createdAt?.toIso8601String(),
       'is_face_registered': isFaceRegistered,
       'is_email_verified': isEmailVerified,
+      'phone': phone,
     };
   }
-=======
->>>>>>> 06708e303f4a6302f4456908d596a042c7882510
 }

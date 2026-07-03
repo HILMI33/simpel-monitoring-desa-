@@ -20,7 +20,7 @@ class MenuGrid extends StatelessWidget {
       crossAxisCount: 3,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.0,
+      childAspectRatio: 0.85,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: menus.map((m) => _buildMenuItem(m)).toList(),

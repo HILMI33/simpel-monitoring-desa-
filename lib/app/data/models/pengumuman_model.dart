@@ -6,6 +6,7 @@ class PengumumanModel {
   final String content;
   final String imageUrl;
   final String authorName;
+  final bool isCarousel;
   final DateTime? createdAt;
 
   PengumumanModel({
@@ -14,6 +15,7 @@ class PengumumanModel {
     required this.content,
     this.imageUrl = '',
     this.authorName = 'Admin Desa',
+    this.isCarousel = false,
     this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class PengumumanModel {
       content: json['content'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       authorName: json['authorName'] ?? 'Admin Desa',
+      isCarousel: json['is_carousel'] ?? false,
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
     );
   }

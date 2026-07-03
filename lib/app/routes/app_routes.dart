@@ -15,7 +15,6 @@ abstract class Routes {
   static const UPDATE_PROGRES = '/update-progres';
   static const DETAIL_REPORT = '/detail-report';
   static const DETAIL_PEMBANGUNAN = '/detail-pembangunan';
-  static const EMAIL_VERIFICATION = '/email-verification';
   static const ACCOUNT_DETAILS = '/account-details';
   static const EDIT_PROFILE = '/edit-profile';
   static const ACTIVITY_LOG = '/activity-log';

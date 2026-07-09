@@ -27,7 +27,21 @@ class NotificationService extends GetxService {
           InitializationSettings(android: androidSettings);
 
       try {
-        await (_localNotifications as dynamic).initialize(initSettings);
+        await _localNotifications.initialize(initSettings);
+        
+        // Create the channel on the device (if a channel with an id already exists, it will be updated)
+        const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          'high_importance_channel', // id
+          'High Importance Notifications', // title
+          description: 'This channel is used for important notifications.', // description
+          importance: Importance.max,
+        );
+
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(channel);
+            
       } catch (e) {
         print('Local Notifications Initialization Error: $e');
       }

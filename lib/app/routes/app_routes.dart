@@ -18,4 +18,5 @@ abstract class Routes {
   static const ACCOUNT_DETAILS = '/account-details';
   static const EDIT_PROFILE = '/edit-profile';
   static const ACTIVITY_LOG = '/activity-log';
+  static const NOTIFICATION = '/notification';
 }

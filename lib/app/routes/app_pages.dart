@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 
+import '../modules/notification/bindings/notification_binding.dart';
+import '../modules/notification/views/notification_view.dart';
+
 import '../modules/chat/bindings/chat_binding.dart';
 import '../modules/chat/views/chat_view.dart';
 import '../modules/create_report_view/bindings/create_report_view_binding.dart';
@@ -125,6 +128,11 @@ class AppPages {
     GetPage(
       name: Routes.ACTIVITY_LOG,
       page: () => const ActivityLogView(),
+    ),
+    GetPage(
+      name: Routes.NOTIFICATION,
+      page: () => const NotificationView(),
+      binding: NotificationBinding(),
     ),
   ];
 }

@@ -24,6 +24,7 @@ class DashboardController extends GetxController {
   final currentBannerIndex = 0.obs;
   
   final banners = <PengumumanModel>[].obs;
+  final unreadNotificationCount = 0.obs;
 
   final isLoading = true.obs;
 
@@ -80,6 +81,14 @@ class DashboardController extends GetxController {
           // Fallback empty to not break
           banners.clear();
         }
+      }
+
+      // 4. Fetch Unread Notifications
+      final notifRes = await apiService.get('/notifications/');
+      if (notifRes.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(notifRes.body);
+        final unreadCount = data.where((n) => n['is_read'] == false).length;
+        unreadNotificationCount.value = unreadCount;
       }
     } catch (e) {
       debugPrint('Error fetching dashboard data: $e');

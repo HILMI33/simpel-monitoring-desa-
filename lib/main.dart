@@ -8,6 +8,7 @@ import 'app/routes/app_pages.dart';
 import 'app/data/services/auth_service.dart';
 import 'app/data/services/api_service.dart';
 import 'app/data/services/firestore_service.dart';
+import 'app/data/services/notification_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -26,6 +27,10 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     debugPrint('Firebase berhasil diinisialisasi.');
+    
+    // Inisialisasi Notification Service setelah Firebase
+    await Get.putAsync(() => NotificationService().init());
+    
   } catch (e) {
     debugPrint('Firebase Belum Aktif atau Gagal Diinisialisasi: $e');
   }

@@ -27,7 +27,7 @@ class NotificationService extends GetxService {
           InitializationSettings(android: androidSettings);
 
       try {
-        await _localNotifications.initialize(initSettings);
+        await _localNotifications.initialize(settings: initSettings);
         
         // Create the channel on the device (if a channel with an id already exists, it will be updated)
         const AndroidNotificationChannel channel = AndroidNotificationChannel(

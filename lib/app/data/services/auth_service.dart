@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../models/user_model.dart';
 import 'api_service.dart';
 
@@ -76,6 +77,17 @@ class AuthService extends GetxService {
 
         currentUser.value = UserModel.fromJson(userData);
         isLoggedIn.value = true;
+        
+        // Send FCM token after login
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            await _api.post('/auth/fcm-token', {'fcm_token': fcmToken});
+          }
+        } catch (e) {
+          debugPrint('FCM Token error: $e');
+        }
+        
         return true;
       } else {
         final error = jsonDecode(response.body);
@@ -176,6 +188,16 @@ class AuthService extends GetxService {
 
         currentUser.value = UserModel.fromJson(userData);
         isLoggedIn.value = true;
+        
+        // Send FCM token after login
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            await _api.post('/auth/fcm-token', {'fcm_token': fcmToken});
+          }
+        } catch (e) {
+          debugPrint('FCM Token error: $e');
+        }
         
         Get.snackbar('Sukses', 'Berhasil masuk dengan Google');
         return true;
